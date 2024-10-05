@@ -21,7 +21,6 @@
       <change beforePath="$PROJECT_DIR$/../.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../platformio.ini" beforeDir="false" afterPath="$PROJECT_DIR$/../platformio.ini" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/config.h" beforeDir="false" afterPath="$PROJECT_DIR$/../src/config.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/../src/main.cpp" afterDir="false" />
     </list>
@@ -138,7 +137,7 @@
       <workItem from="1726162384917" duration="96000" />
       <workItem from="1726244172229" duration="3274000" />
       <workItem from="1726501384076" duration="13000" />
-      <workItem from="1728151409039" duration="2934000" />
+      <workItem from="1728151409039" duration="7186000" />
     </task>
     <servers />
   </component>

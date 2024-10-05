@@ -6,17 +6,18 @@ void setup() {
     Wire.begin();
 }
 
-byte x = 0;
+uint8_t color[] = {254, 149, 73};
 void loop() {
     Wire.beginTransmission(4);
-    Wire.write('x' );
-    Wire.write(x);
+    for (int i = 0; i < 3; i++) {
+        Wire.write(color[i]);
+    }
     Wire.endTransmission();
-    Wire.requestFrom(4, 5);
+    Wire.requestFrom(4, 3);
     while (0 < Wire.available()) {
-        char c = Wire.read();
+        uint8_t c = Wire.read();
         Serial.print(c);
     }
     Serial.println();
-    delay(500);
+    delay(100);
 }

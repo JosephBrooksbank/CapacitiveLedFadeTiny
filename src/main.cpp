@@ -2,6 +2,7 @@
 #include <ADCTouch.h>
 #include <config.h>
 #include <FastLED.h>
+#include "Wire.h"
 
 
 #ifdef USE_SERIAL
@@ -28,7 +29,14 @@ const uint8_t ledDimSpeed = 8;
 int capacitiveReference;
 uint8_t brightness = 0;
 
+
+void requestEvent();
+void setWholeStripColor(uint32_t color);
+void receiveEvent(int howMany);
 void setup() {
+    Wire.begin(I2C_ADDRESS);
+    Wire.onRequest(requestEvent);
+    Wire.onReceive(receiveEvent);
     SERIAL_BEGIN(9600);
     FastLED.addLeds<WS2812B, ledStripPin, COLOR_ORDER>(leds, NUM_LEDS);
     pinMode(ledPin, OUTPUT);
@@ -46,7 +54,6 @@ void dimLeds() {
         brightness -= ledDimSpeed;
     }
 }
-
 void loop() {
     int capacitiveValue = ADCTouch.read(capPin, 100);
     capacitiveValue -= capacitiveReference;
@@ -59,4 +66,23 @@ void loop() {
     FastLED.show();
     dimLeds();
     delay(1);
+}
+
+
+char message[3];
+void receiveEvent(int howMany){
+
+    for (int i =0; i < howMany; i++) {
+        message[i] = Wire.read();
+    }
+}
+
+void requestEvent() {
+    Wire.write(message);
+}
+
+void setWholeStripColor(uint32_t colorToSet) {
+    for (int i; i < NUM_LEDS; i++) {
+        leds[i] = colorToSet;
+    }
 }

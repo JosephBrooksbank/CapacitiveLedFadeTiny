@@ -17,11 +17,10 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="79131abe-743c-4b11-b6e3-2d497d1e7b01" name="Changes" comment="idea file changes&#10;&#10;usually I gitignore these but I'm trying to keep them in sync for once">
+    <list default="true" id="79131abe-743c-4b11-b6e3-2d497d1e7b01" name="Changes" comment="Add 'digispark' style attiny dev board environment">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Serial_i2c_Controller/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Serial_i2c_Controller/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Serial_i2c_Controller/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Serial_i2c_Controller/src/main.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/platformio.ini" beforeDir="false" afterPath="$PROJECT_DIR$/platformio.ini" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/config.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/config.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.cpp" afterDir="false" />
     </list>
@@ -174,7 +173,7 @@
       <workItem from="1726243754483" duration="9247000" />
       <workItem from="1726501398863" duration="657000" />
       <workItem from="1727992395749" duration="1214000" />
-      <workItem from="1728149777837" duration="4722000" />
+      <workItem from="1728149777837" duration="9253000" />
     </task>
     <task id="LOCAL-00001" summary="Add LED control, config file, conditional serial">
       <option name="closed" value="true" />
@@ -192,7 +191,31 @@
       <option name="project" value="LOCAL" />
       <updated>1726501453692</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Create PCB">
+      <option name="closed" value="true" />
+      <created>1728155209022</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1728155209022</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Send / Receive i2c main board">
+      <option name="closed" value="true" />
+      <created>1728155277368</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1728155277368</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Add 'digispark' style attiny dev board environment">
+      <option name="closed" value="true" />
+      <created>1728155315079</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1728155315079</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -201,6 +224,9 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Add LED control, config file, conditional serial" />
     <MESSAGE value="idea file changes&#10;&#10;usually I gitignore these but I'm trying to keep them in sync for once" />
-    <option name="LAST_COMMIT_MESSAGE" value="idea file changes&#10;&#10;usually I gitignore these but I'm trying to keep them in sync for once" />
+    <MESSAGE value="Create PCB" />
+    <MESSAGE value="Send / Receive i2c main board" />
+    <MESSAGE value="Add 'digispark' style attiny dev board environment" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add 'digispark' style attiny dev board environment" />
   </component>
 </project>
