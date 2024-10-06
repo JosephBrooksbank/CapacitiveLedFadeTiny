@@ -39,12 +39,11 @@ void setup() {
     Wire.onReceive(receiveEvent);
     SERIAL_BEGIN(9600);
     FastLED.addLeds<WS2812B, ledStripPin, COLOR_ORDER>(leds, NUM_LEDS);
+    FastLED.setCorrection(TypicalLEDStrip);
     pinMode(ledPin, OUTPUT);
     capacitiveReference = ADCTouch.read(capPin, 500);
-    for (int i; i < NUM_LEDS; i++) {
-        leds[i] = CRGB::White;
-    }
-    FastLED.setBrightness(0);
+    fill_solid(leds, NUM_LEDS, CRGB::White);
+    FastLED.setBrightness(255);
 }
 
 void dimLeds() {
@@ -54,7 +53,14 @@ void dimLeds() {
         brightness -= ledDimSpeed;
     }
 }
+
+char receivedColor[3];
+char currentColor[3];
 void loop() {
+    if (memcmp(receivedColor, currentColor, 3) != 0) {
+        fill_solid(leds, NUM_LEDS, CRGB(receivedColor[0], receivedColor[1], receivedColor[2]));
+        memcpy(currentColor, receivedColor, 3);
+    }
     int capacitiveValue = ADCTouch.read(capPin, 100);
     capacitiveValue -= capacitiveReference;
 
@@ -62,23 +68,27 @@ void loop() {
     if (capacitiveValue > CAPACITIVE_SENSITIVITY) {
         brightness = 255;
     }
-    FastLED.setBrightness(brightness);
+//    FastLED.setBrightness(brightness);
     FastLED.show();
-    dimLeds();
+//    dimLeds();
     delay(1);
 }
 
 
-char message[3];
 void receiveEvent(int howMany){
 
     for (int i =0; i < howMany; i++) {
-        message[i] = Wire.read();
+        receivedColor[i] = Wire.read();
     }
 }
 
 void requestEvent() {
-    Wire.write(message);
+    //5 bytes
+    Wire.write(currentColor[0]);
+    Wire.write(",");
+    Wire.write(currentColor[1]);
+    Wire.write(",");
+    Wire.write(currentColor[2]);
 }
 
 void setWholeStripColor(uint32_t colorToSet) {
