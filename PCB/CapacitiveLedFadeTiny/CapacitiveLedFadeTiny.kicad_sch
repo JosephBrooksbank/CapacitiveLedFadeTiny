@@ -783,7 +783,7 @@
     (property "Value" "ATTINY85-20SU" (at 156.21 69.215 0)
       (effects (font (size 1.524 1.524)) (justify left))
     )
-    (property "Footprint" "digikey-footprints:SOIC-8_W5.3mm" (at 155.575 56.515 0)
+    (property "Footprint" "Package_SO:SOIC-8_5.23x5.23mm_P1.27mm" (at 155.575 56.515 0)
       (effects (font (size 1.524 1.524)) (justify left) hide)
     )
     (property "Datasheet" "http://www.microchip.com/mymicrochip/filehandler.aspx?ddocname=en589894" (at 155.575 53.975 0)
