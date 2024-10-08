@@ -1,7 +1,7 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define I2C_ADDRESS 4
+#define I2C_ADDRESS 7
 
 // How sensitive the capacitive sensor is. Lower = more sensitive.
 #define CAPACITIVE_SENSITIVITY 5
