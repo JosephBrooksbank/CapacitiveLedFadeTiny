@@ -31,7 +31,6 @@ uint8_t brightness = 0;
 
 
 void requestEvent();
-void setWholeStripColor(uint32_t color);
 void receiveEvent(int howMany);
 void setup() {
     Wire.begin(I2C_ADDRESS);
@@ -43,7 +42,7 @@ void setup() {
     pinMode(ledPin, OUTPUT);
     capacitiveReference = ADCTouch.read(capPin, 500);
     fill_solid(leds, NUM_LEDS, CRGB::White);
-    FastLED.setBrightness(255);
+    FastLED.setBrightness(0);
 }
 
 void dimLeds() {
@@ -68,9 +67,9 @@ void loop() {
     if (capacitiveValue > CAPACITIVE_SENSITIVITY) {
         brightness = 255;
     }
-//    FastLED.setBrightness(brightness);
+    FastLED.setBrightness(brightness);
     FastLED.show();
-//    dimLeds();
+    dimLeds();
     delay(1);
 }
 
@@ -89,10 +88,4 @@ void requestEvent() {
     Wire.write(currentColor[1]);
     Wire.write(",");
     Wire.write(currentColor[2]);
-}
-
-void setWholeStripColor(uint32_t colorToSet) {
-    for (int i; i < NUM_LEDS; i++) {
-        leds[i] = colorToSet;
-    }
 }
