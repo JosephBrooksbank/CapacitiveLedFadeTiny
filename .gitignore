@@ -10,3 +10,4 @@
 **/*-backups/**
 **/fp-info-cache
 PCB/~*
+PCB/**/Gerbers/**
