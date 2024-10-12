@@ -34,8 +34,8 @@
         "other_text_thickness": 0.15,
         "other_text_upright": false,
         "pads": {
-          "drill": 1.0,
-          "height": 1.7,
+          "drill": 0.95,
+          "height": 1.95,
           "width": 1.7
         },
         "silk_line_width": 0.15,
@@ -48,12 +48,15 @@
           "min_clearance": 0.5
         }
       },
-      "diff_pair_dimensions": [],
+      "diff_pair_dimensions": [
+        {
+          "gap": 0.0,
+          "via_gap": 0.0,
+          "width": 0.0
+        }
+      ],
       "drc_exclusions": [
-        "clearance|114851380|101404674|a943978c-97d7-4934-9b38-b372750773e9|7fee5ddd-1476-4fd9-a41f-3a5d702340b7",
-        "solder_mask_bridge|114851380|101404674|7fee5ddd-1476-4fd9-a41f-3a5d702340b7|a943978c-97d7-4934-9b38-b372750773e9",
-        "starved_thermal|130302000|93459000|67867f25-56db-494f-994d-954448f6fa5b|1a61a190-581b-46b8-bb96-6864c3da1451|F.Cu",
-        "starved_thermal|131572000|94262000|67867f25-56db-494f-994d-954448f6fa5b|a8b5f9fc-7914-4e37-b158-a3dd162ec9db|F.Cu"
+        "starved_thermal|120624000|98882200|67867f25-56db-494f-994d-954448f6fa5b|1a61a190-581b-46b8-bb96-6864c3da1451|F.Cu"
       ],
       "meta": {
         "version": 2
@@ -170,8 +173,17 @@
           "td_width_to_size_filter_ratio": 0.9
         }
       ],
-      "track_widths": [],
-      "via_dimensions": [],
+      "track_widths": [
+        0.0,
+        0.381,
+        1.27
+      ],
+      "via_dimensions": [
+        {
+          "diameter": 0.0,
+          "drill": 0.0
+        }
+      ],
       "zones_allow_external_fillets": false
     },
     "layer_presets": [],
@@ -488,6 +500,14 @@
       "version": 1
     },
     "net_format_name": "",
+    "ngspice": {
+      "fix_include_paths": true,
+      "meta": {
+        "version": 0
+      },
+      "model_mode": 0,
+      "workbook_filename": ""
+    },
     "page_layout_descr_file": "",
     "plot_directory": "",
     "spice_current_sheet_as_root": false,
