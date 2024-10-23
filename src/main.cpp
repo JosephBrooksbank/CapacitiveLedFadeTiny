@@ -53,6 +53,9 @@ void dimLeds() {
     }
 }
 
+uint8_t messageLength = 0;
+char message[30];
+
 char receivedColor[3];
 char currentColor[3];
 void loop() {
@@ -76,16 +79,20 @@ void loop() {
 
 void receiveEvent(int howMany){
 
-    for (int i =0; i < howMany; i++) {
-        receivedColor[i] = Wire.read();
+    // buffer only 30 bytes
+    if (howMany > 30) {
+        return;
     }
+
+    for (int i =0; i < howMany; i++) {
+        message[i] = Wire.read();
+    }
+    messageLength = howMany;
 }
 
 void requestEvent() {
     //5 bytes
-    Wire.write(currentColor[0]);
-    Wire.write(",");
-    Wire.write(currentColor[1]);
-    Wire.write(",");
-    Wire.write(currentColor[2]);
+    for (int i = 0; i < messageLength; i++) {
+        Wire.write(message[i]);
+    }
 }
