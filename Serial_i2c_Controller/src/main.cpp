@@ -15,6 +15,10 @@ void setup() {
 
 uint8_t color[] = {254, 149, 75};
 void loop() {
+    String message;
+    while (Serial.available()) {
+        message = Serial.readString();
+    }
     fill_solid(leds, NUM_LEDS, CHSV(hue, 255, 255));
     hue++;
     if (hue >= 255){
