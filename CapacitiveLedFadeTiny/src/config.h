@@ -4,7 +4,7 @@
 // How sensitive the capacitive sensor is. Lower = more sensitive.
 #define CAPACITIVE_SENSITIVITY 5
 const int ledStripPin = 1;
-const uint8_t I2C_ADDRESS = 2;
+const uint8_t I2C_ADDRESS = 3;
 const uint8_t txPin = 4;
 
 // How many LEDs in the string. Limited by memory available.

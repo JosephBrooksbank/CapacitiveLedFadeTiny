@@ -3,6 +3,7 @@
 #include <config.h>
 #include "FastLED.h"
 #include "Serial.h"
+#include "I2CLedControl.h"
 #include "I2CEchoHandler.h"
 
 
@@ -10,7 +11,9 @@ const int ledPin = 0;
 //const int ledStripPin = 1;
 const int capPin = 3;
 CRGB leds[NUM_LEDS];
-I2CEchoHandler i2cHandler;
+bool touched;
+I2CLedControl i2cHandler(touched);
+//I2CEchoHandler i2cHandler;
 
 
 const uint8_t ledDimSpeed = 8;
@@ -40,8 +43,10 @@ void loop() {
     if (capacitiveValue > CAPACITIVE_SENSITIVITY) {
         SERIAL_PRINTLN("touched");
         brightness = 255;
+        touched = true;
         lastDetected = 0;
     } else if (brightness > 0 && lastDetected > ledDimDelay) {
+        touched = false;
         dimLeds();
     } else {
         lastDetected++;
