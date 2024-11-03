@@ -1,6 +1,12 @@
 #include <Arduino.h>
 #include "Wire.h"
 
+void echo();
+void checkLed();
+void readModuleSerial();
+uint8_t ledStartingAddress = 2;
+uint8_t numModules = 2;
+
 void setup() {
     Wire.setClock(100000);
     Wire.begin();
@@ -9,6 +15,25 @@ void setup() {
 }
 
 void loop() {
+    checkLed();
+    //echo();
+//    readModuleSerial();
+    delay(100);
+}
+
+void checkLed() {
+for (int address = ledStartingAddress; address < ledStartingAddress + numModules; address++) {
+    Wire.requestFrom(address, 1);
+    uint8_t isOn = Wire.read();
+    if (isOn == 1) {
+        Serial.print("LED number ");
+        Serial.print(address);
+        Serial.println(" is on!");
+    }
+}
+}
+
+void echo() {
     String message;
     byte n = Serial.available();
     if (n != 0 ) {
@@ -38,11 +63,11 @@ void loop() {
     char charFromModule = Wire.read();
     Serial.println(charFromModule);
     }
+}
 
-//    if (Serial1.available()) {
-//        char c = char(Serial1.read());
-//        Serial.print(c);
-//    }
-
-    delay(2);
+void readModuleSerial() {
+    while (1 < Serial1.available()) {
+        Serial.print(Serial1.read());
+    }
+    Serial.println(Serial1.read());
 }
