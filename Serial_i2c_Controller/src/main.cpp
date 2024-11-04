@@ -34,7 +34,7 @@ void loop() {
     turnOtherLedsOn();
     //echo();
 //    readModuleSerial();
-    delay(100);
+//    delay(1);
 }
 
 void checkLed() {
@@ -90,8 +90,8 @@ void sendGlobalCommand(char command) {
     Wire.beginTransmission(0);
     Wire.write(command);
     Wire.endTransmission();
-    for (Module mod : modules) {
-        mod.currentCommand = command;
+    for (int i = 0; i < numModules; i++) {
+        modules[i].currentCommand = command;
     }
 }
 
