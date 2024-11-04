@@ -4,7 +4,7 @@
 #include "Serial.h"
 
 
-I2CLedControl::I2CLedControl(bool& isTouched) : isTouched(isTouched) {
+I2CLedControl::I2CLedControl(bool& isTouched) : command('r'), isNewCommand(false), isTouched(isTouched) {
     if (!instance) {
         instance = this;
     }
@@ -36,8 +36,14 @@ void I2CLedControl::onReceive(int bytesReceived) {
     if (bytesReceived > BUFFER_SIZE) {
         return;
     }
+    if (bytesReceived <= 0 ) {
+        return;
+    }
 
-    for (auto i = 0; i < bytesReceived; i++) {
+    isNewCommand = true;
+    command = Wire.read();
+
+    for (auto i = 0; i < bytesReceived-1; i++) {
         buffer[i] = Wire.read();
         SERIAL_PRINTLN(buffer[i]);
     }

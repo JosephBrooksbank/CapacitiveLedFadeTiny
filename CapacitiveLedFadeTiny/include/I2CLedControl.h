@@ -11,6 +11,8 @@ public:
     void setup() override;
     void onReceive(int bytesReceived) override;
     void onRequest() override;
+    char command;
+    bool isNewCommand;
 
 private:
     bool& isTouched;
