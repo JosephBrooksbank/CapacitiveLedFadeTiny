@@ -1,4 +1,4 @@
-#include "I2CLedControl.h"
+#include "I2CLedControl.hpp"
 #include "Wire.h"
 #include "config.h"
 #include "Serial.h"

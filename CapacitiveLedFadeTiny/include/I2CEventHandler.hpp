@@ -2,8 +2,8 @@
 // Created by joebr on 10/30/2024.
 //
 
-#ifndef CAPACITIVELEDFADETINY_I2CEVENTHANDLER_H
-#define CAPACITIVELEDFADETINY_I2CEVENTHANDLER_H
+#ifndef CAPACITIVELEDFADETINY_I2CEVENTHANDLER_HPP
+#define CAPACITIVELEDFADETINY_I2CEVENTHANDLER_HPP
 
 #include "Arduino.h"
 
@@ -15,11 +15,12 @@ public:
     virtual void onReceive(int bytesReceived) = 0;
     virtual void onRequest() = 0;
     virtual void setup() = 0;
+    byte*  getBuffer();
 
 protected:
     uint8_t messageLength = 0;
-    char buffer[BUFFER_SIZE];
+    byte buffer[BUFFER_SIZE]{};
 };
 
 
-#endif //CAPACITIVELEDFADETINY_I2CEVENTHANDLER_H
+#endif //CAPACITIVELEDFADETINY_I2CEVENTHANDLER_HPP

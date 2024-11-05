@@ -2,18 +2,21 @@
 // Created by joebr on 10/30/2024.
 //
 
-#include "I2CEventHandler.h"
+#include "I2CEventHandler.hpp"
 
 
-class I2CEchoHandler : public I2CEventHandler {
+class I2CLedControl : public I2CEventHandler {
 public:
-    I2CEchoHandler();
+    explicit I2CLedControl(bool& isTouched);
     void setup() override;
     void onReceive(int bytesReceived) override;
     void onRequest() override;
+    char command;
+    bool isNewCommand;
 
 private:
-    static I2CEchoHandler *instance;
+    bool& isTouched;
+    static I2CLedControl *instance;
 protected:
     static void receiveEventWrapper(int bytesReceived);
     static void requestEventWrapper();

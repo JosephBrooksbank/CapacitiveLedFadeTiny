@@ -3,7 +3,7 @@
 #ifdef USE_SERIAL
 #include "SerialLogger.h"
 #endif
-#include "EmptyLogger.h"
+#include "EmptyLogger.hpp"
 
 Logger* Logger::GetLogger() {
 #ifdef USE_SERIAL

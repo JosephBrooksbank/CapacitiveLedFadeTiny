@@ -1,10 +1,9 @@
-#include "I2CEchoHandler.h"
+#include "I2CEchoHandler.hpp"
 #include "Wire.h"
 #include "config.h"
 #include "Serial.h"
 
 
-bool isNewMessage = false;
 
 I2CEchoHandler::I2CEchoHandler() {
     if (!instance) {
@@ -38,7 +37,6 @@ void I2CEchoHandler::onReceive(int bytesReceived) {
         SERIAL_PRINTLN(buffer[i]);
     }
     messageLength = bytesReceived;
-    isNewMessage = true;
 }
 
 void I2CEchoHandler::receiveEventWrapper(int bytesReceived) {
