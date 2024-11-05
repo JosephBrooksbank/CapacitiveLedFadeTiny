@@ -18,6 +18,7 @@ extern SendOnlySoftwareSerial mySerial;  // Declare mySerial as an extern variab
 #else
 #define SERIAL_BEGIN(baud) // Empty
 #define SERIAL_PRINTLN(x)  // Empty
+#define SERIAL_PRINT(x) // Empty
 #endif
 
 #endif // CAPACITIVELEDFADETINY_SERIAL_H

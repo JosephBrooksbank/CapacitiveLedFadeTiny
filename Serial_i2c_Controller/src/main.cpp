@@ -8,7 +8,7 @@ void sendCommand(uint8_t address, char command);
 void sendGlobalCommand(char command);
 void turnOtherLedsOn();
 const uint8_t ledStartingAddress = 2;
-const uint8_t numModules = 2;
+const uint8_t numModules = 6;
 struct Module {
     bool touched;
     char currentCommand;
