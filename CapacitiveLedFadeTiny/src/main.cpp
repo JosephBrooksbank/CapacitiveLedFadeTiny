@@ -3,12 +3,15 @@
 #include <config.h>
 #include "FastLED.h"
 #include "Serial.h"
-#include "I2CLedControl.h"
-#include "I2CEchoHandler.h"
+#include "I2CLedControl.hpp"
+#include "I2CEchoHandler.hpp"
 
 /// commands
 // r: 'read' -> function as normal. turn on led in response to touch and report status when requested
 // o: 'on' -> turn on led, continue to report status when requested. Will continue to be on until given a different command.
+// c: 'color' -> set current led strip color, without worrying about current brightness. Goes back to previous command after. Uses 3 bytes from buffer as RGB
+// f: 'fade' -> change turn on mode to 'fade in', rather than turning on instantly. next byte is how fast to turn on
+// i: 'instant' -> default turn on mode, when touch (or 'on') then set brightness to max with no ramp up
 
 const int ledPin = 0;
 //const int ledStripPin = 1;
@@ -20,16 +23,25 @@ I2CLedControl i2cHandler(touched);
 
 
 const uint8_t ledDimSpeed = 8;
+uint8_t ledFadeOnSpeed = 8;
 int capacitiveReference;
 uint8_t brightness = 0;
 uint8_t ledDimDelay = 10;
 uint8_t lastDetected = 0;
 char currentCommand = 'r';
+char previousCommand = 'r';
+char turnOnMode = 'i';
 
+void turnOn();
+void fadeOn();
+void fadeOff();
 void rBehavior();
 void oBehavior();
+void cBehavior();
+void fBehavior();
+void iBehavior();
+
 void ledSetup();
-void dimLeds();
 void setAllLedColor(const CRGB& color);
 void setup() {
     SERIAL_BEGIN(9600);
@@ -43,6 +55,7 @@ void setup() {
 
 void loop() {
     if (i2cHandler.isNewCommand) {
+        previousCommand = currentCommand;
         currentCommand = i2cHandler.command;
     }
 
@@ -64,6 +77,18 @@ void loop() {
             oBehavior();
             break;
         }
+        case 'c': {
+            cBehavior();
+            break;
+        }
+        case 'f': {
+            fBehavior();
+            break;
+        }
+        case 'i': {
+            iBehavior();
+            break;
+        }
         default:
             break;
     }
@@ -72,10 +97,10 @@ void loop() {
 
 void rBehavior() {
     if (touched) {
-        brightness = 255;
+        turnOn();
         lastDetected = 0;
     } else if (brightness > 0 && lastDetected > ledDimDelay) {
-        dimLeds();
+        fadeOff();
     } else {
         lastDetected++;
     }
@@ -85,10 +110,31 @@ void rBehavior() {
 }
 
 void oBehavior() {
-    brightness = 255;
+    turnOn();
     lastDetected = 0;
     FastLED.setBrightness(brightness);
     FastLED.show();
+}
+
+void cBehavior() {
+    byte* buffer = i2cHandler.getBuffer();
+    uint8_t red = buffer[0];
+    uint8_t green = buffer[1];
+    uint8_t blue = buffer[2];
+    setAllLedColor(CRGB(red, green, blue));
+    currentCommand = previousCommand;
+}
+
+void fBehavior() {
+    byte* buffer = i2cHandler.getBuffer();
+    ledFadeOnSpeed = buffer[0];
+    turnOnMode = 'f';
+    currentCommand = previousCommand;
+}
+
+void iBehavior() {
+    turnOnMode = 'i';
+    currentCommand = previousCommand;
 }
 
 void ledSetup() {
@@ -103,7 +149,27 @@ void setAllLedColor(const CRGB& color) {
     fill_solid(leds, NUM_LEDS, color);
 }
 
-void dimLeds() {
+void turnOn() {
+    switch (turnOnMode) {
+        default:
+        case 'o': {
+            brightness = 255;
+            break;
+        }
+        case 'f': {
+            fadeOn();
+        }
+    }
+}
+void fadeOn() {
+    if (brightness + ledFadeOnSpeed > 255) {
+        brightness = 255;
+    } else {
+        brightness += ledFadeOnSpeed;
+    }
+}
+
+void fadeOff() {
     if (brightness < ledDimSpeed) {
         brightness = 0;
     }
