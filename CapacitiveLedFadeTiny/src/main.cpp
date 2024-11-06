@@ -122,6 +122,7 @@ void cBehavior() {
     uint8_t green = buffer[1];
     uint8_t blue = buffer[2];
     setAllLedColor(CRGB(red, green, blue));
+    FastLED.show();
     currentCommand = previousCommand;
 }
 

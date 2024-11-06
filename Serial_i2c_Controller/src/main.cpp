@@ -5,9 +5,9 @@ void echo();
 void checkLed();
 void checkUserInput();
 void readModuleSerial();
-void sendCommand(uint8_t address, char command, char* data, uint8_t messageLength);
+void sendCommand(uint8_t address, char command, byte* data, uint8_t messageLength);
 void sendCommand(uint8_t address, char command);
-void sendGlobalCommand(char command, char* data, uint8_t messageLength, bool isStickyCommand);
+void sendGlobalCommand(char command, byte* data, uint8_t messageLength, bool isStickyCommand);
 void sendGlobalCommand(char command);
 void turnOtherLedsOn();
 
@@ -20,7 +20,7 @@ struct Module {
     uint8_t address;
 };
 Module modules[numModules];
-char buffer[30]{};
+byte buffer[30]{};
 char currentCommand = ' ';
 
 void setup() {
@@ -52,9 +52,9 @@ for (int i = 0; i < numModules; i++) {
     Wire.requestFrom(address, 1);
     uint8_t isOn = Wire.read();
     if (isOn == 1) {
-//        Serial.print("LED number ");
-//        Serial.print(address);
-//        Serial.println(" is on!");
+        Serial.print("LED number ");
+        Serial.print(address);
+        Serial.println(" is on!");
         modules[i].touched = true;
     } else if (isOn == 0) {
         modules[i].touched = false;
@@ -77,19 +77,17 @@ void checkUserInput() {
 
             switch (currentCommand) {
                 case 'c': {
-                    if (Serial.available() < 3) {
-                        Serial.print("error: only ");
-                        Serial.print(Serial.available());
-                        Serial.println(" bytes in serial buffer");
-                    } else {
-                        buffer[0] = Serial.read();
-                        buffer[1] = Serial.read();
-                        buffer[2] = Serial.read();
-                        Serial.print("sending color ");
-                        Serial.print((uint8_t)buffer[0]);
-                        Serial.print((uint8_t)buffer[1]);
-                        Serial.println((uint8_t)buffer[2]);
-                        sendGlobalCommand('c', buffer, 3, false);
+                    if (Serial.available()) {
+                        char color = Serial.read();
+                        switch (color) {
+                            case 'r': {
+                                Serial.println("changing color to red");
+                                buffer[0] = 255;
+                                buffer[1] = 0;
+                                buffer[2] = 0;
+                                sendGlobalCommand('c', buffer, 3, false);
+                            }
+                        }
                     }
                     break;
                 }
@@ -129,7 +127,7 @@ void turnOtherLedsOn() {
     }
 }
 
-void sendCommand(uint8_t address, char command, char* data, uint8_t messageLength) {
+void sendCommand(uint8_t address, char command, byte* data, uint8_t messageLength) {
     Wire.beginTransmission(address);
     Wire.write(command);
     for (int i = 0; i < messageLength; i++) {
@@ -147,7 +145,7 @@ void sendCommand(uint8_t address, char command) {
 
 }
 
-void sendGlobalCommand(char command, char* data, uint8_t messageLength, bool isStickyCommand) {
+void sendGlobalCommand(char command, byte* data, uint8_t messageLength, bool isStickyCommand) {
     Wire.beginTransmission(0);
     Wire.write(command);
     for (int i = 0; i < messageLength; i++) {
