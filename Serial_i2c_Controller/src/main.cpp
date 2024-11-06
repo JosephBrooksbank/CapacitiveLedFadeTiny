@@ -13,7 +13,7 @@ void turnOtherLedsOn();
 
 
 const uint8_t ledStartingAddress = 2;
-const uint8_t numModules = 6;
+const uint8_t numModules =1;
 struct Module {
     bool touched;
     char currentCommand;
@@ -26,6 +26,7 @@ char currentCommand = ' ';
 void setup() {
     Wire.setClock(100000);
     Wire.begin();
+    Wire.setWireTimeout(1000, true);
     Serial.begin(115200);
     Serial1.begin(9600);
     for (int i = 0; i < numModules; i++) {
@@ -49,20 +50,31 @@ void checkLed() {
 for (int i = 0; i < numModules; i++) {
     int address = modules[i].address;
 
-    Wire.requestFrom(address, 1);
-    uint8_t isOn = Wire.read();
-    if (isOn == 1) {
+    Wire.requestFrom(address, 3);
+//    uint8_t highByte = Wire.read();
+//    uint8_t lowByte = Wire.read();
+//    int isOn = (highByte << 8 ) | lowByte;
+        uint8_t r = Wire.read();
+        uint8_t g = Wire.read();
+        uint8_t b = Wire.read();
         Serial.print("LED number ");
         Serial.print(address);
-        Serial.println(" is on!");
-        modules[i].touched = true;
-    } else if (isOn == 0) {
-        modules[i].touched = false;
-    } else if (isOn == 255) {
-//        Serial.print("ERROR: Expected value from address ");
+        Serial.print(" is ");
+        Serial.print(r);
+        Serial.print(g);
+        Serial.println(b);
+//    if (isOn == 1) {
+//        Serial.print("LED number ");
 //        Serial.print(address);
-//        Serial.println(" but it isn't connected!");
-    }
+//        Serial.println(" is on!");
+//        modules[i].touched = true;
+//    } else if (isOn == 0) {
+//        modules[i].touched = false;
+//    } else if (isOn == 255) {
+////        Serial.print("ERROR: Expected value from address ");
+////        Serial.print(address);
+////        Serial.println(" but it isn't connected!");
+//    }
 }
 }
 
@@ -123,7 +135,7 @@ void turnOtherLedsOn() {
         }
     }
     if (noneTouched) {
-        sendGlobalCommand('r');
+//        sendGlobalCommand('r');
     }
 }
 

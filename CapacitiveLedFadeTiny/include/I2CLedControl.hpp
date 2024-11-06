@@ -7,7 +7,7 @@
 
 class I2CLedControl : public I2CEventHandler {
 public:
-    explicit I2CLedControl(bool& isTouched);
+    explicit I2CLedControl(int & touchedValue);
     void setup() override;
     void onReceive(int bytesReceived) override;
     void onRequest() override;
@@ -15,7 +15,7 @@ public:
     bool isNewCommand;
 
 private:
-    bool& isTouched;
+    int & touchedValue;
     static I2CLedControl *instance;
 protected:
     static void receiveEventWrapper(int bytesReceived);

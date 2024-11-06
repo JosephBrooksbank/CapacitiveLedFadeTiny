@@ -4,11 +4,13 @@
 #include "Serial.h"
 
 
-I2CLedControl::I2CLedControl(bool& isTouched) : command('r'), isNewCommand(false), isTouched(isTouched) {
+I2CLedControl::I2CLedControl(int& isTouched) : command('r'), isNewCommand(false), touchedValue(isTouched) {
     if (!instance) {
         instance = this;
     }
-    buffer[0] = 'r';
+    buffer[0] = 121;
+    buffer[1] = 121;
+    buffer[2] = 121;
 }
 
 
@@ -20,7 +22,10 @@ void I2CLedControl::setup() {
 
 void I2CLedControl::onRequest() {
 //    SERIAL_PRINT("sending via i2c: ");
-    Wire.write(isTouched);
+//    int test = 43;
+    Wire.write(buffer[0]);
+    Wire.write(buffer[1]);
+    Wire.write(buffer[2]);
 //    SERIAL_PRINT(buffer[0]);
 //    if (buffer[0] == 'r') {
 //        SERIAL_PRINT(" command: status: ");

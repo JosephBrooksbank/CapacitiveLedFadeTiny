@@ -18,7 +18,8 @@ const int ledPin = 0;
 const int capPin = 3;
 CRGB leds[NUM_LEDS];
 bool touched;
-I2CLedControl i2cHandler(touched);
+int capacitiveValue = 0;
+I2CLedControl i2cHandler(capacitiveValue);
 //I2CEchoHandler i2cHandler;
 
 
@@ -40,7 +41,6 @@ void oBehavior();
 void cBehavior();
 void fBehavior();
 void iBehavior();
-
 void ledSetup();
 void setAllLedColor(const CRGB& color);
 void setup() {
@@ -57,10 +57,25 @@ void loop() {
     if (i2cHandler.isNewCommand) {
         previousCommand = currentCommand;
         currentCommand = i2cHandler.command;
+        i2cHandler.isNewCommand = false;
+        FastLED.setBrightness(255);
+        FastLED.show();
+        delay(1000);
+        if (currentCommand == 'c') {
+            fill_solid(leds, NUM_LEDS, CRGB::Green);
+            FastLED.show();
+            delay(1000);
+        } else {
+            fill_solid(leds, NUM_LEDS, CRGB::Red);
+            FastLED.show();
+            delay(1000);
+        }
+
+        fill_solid(leds, NUM_LEDS, CRGB::White);
+
     }
 
-    int capacitiveValue = ADCTouch.read(capPin, 100);
-    capacitiveValue -= capacitiveReference;
+    capacitiveValue = ADCTouch.read(capPin, 100) - capacitiveReference;
 //    SERIAL_PRINTLN(capacitiveValue);
     if (capacitiveValue > CAPACITIVE_SENSITIVITY) {
         SERIAL_PRINTLN("touched");
@@ -122,6 +137,7 @@ void cBehavior() {
     uint8_t green = buffer[1];
     uint8_t blue = buffer[2];
     setAllLedColor(CRGB(red, green, blue));
+    FastLED.setBrightness(125);
     FastLED.show();
     currentCommand = previousCommand;
 }
