@@ -14,7 +14,7 @@ const int ledStripPin = 1;
 #define COLOR_ORDER GRB
 
 // if we should include (software) serial for logging
-//#define USE_SERIAL
+#define USE_SERIAL
 
 
 #endif

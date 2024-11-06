@@ -81,6 +81,8 @@ void setup() {
 
 void loop() {
     if (i2cHandler.isNewCommand) {
+        SERIAL_PRINT("New command: ");
+        SERIAL_PRINTLN(i2cHandler.command);
         previousCommand = currentCommand;
         currentCommand = i2cHandler.command;
         i2cHandler.isNewCommand = false;
