@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 // How sensitive the capacitive sensor is. Lower = more sensitive.
-#define CAPACITIVE_SENSITIVITY 5
+#define CAPACITIVE_SENSITIVITY 8
 const int ledStripPin = 1;
 #define I2C_ADDRESS 2
 #define txPin 4
@@ -14,7 +14,7 @@ const int ledStripPin = 1;
 #define COLOR_ORDER GRB
 
 // if we should include (software) serial for logging
-#define USE_SERIAL
+//#define USE_SERIAL
 
 
 #endif

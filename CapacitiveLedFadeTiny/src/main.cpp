@@ -22,7 +22,9 @@ const int capPin = 3;
 CRGB leds[NUM_LEDS];
 bool touched;
 int capacitiveValue = 0;
-I2CLedControl i2cHandler(capacitiveValue);
+volatile int8_t elapsedTime = -1;
+volatile uint8_t incrementCounter = 0;
+I2CLedControl i2cHandler(elapsedTime);
 //I2CEchoHandler i2cHandler;
 
 
@@ -69,11 +71,21 @@ void ledSetup();
 
 void setAllLedColor(const CRGB &color);
 
+void timerSetup() {
+    TCCR1 = 0; // reset timer1 config
+    GTCCR |= (1 || PSR1); // reset prescaler
+    TCCR1 = (1 << CTC1) | (1 << CS12) | (1 << CS11); // CTC mode, prescaler = 64
+    OCR1C = 124; // Compare value for 1ms
+    TIMSK |= (1 << OCIE1A); // enable interrupt
+
+    sei(); // enable global interrupts
+}
+
 void setup() {
     SERIAL_BEGIN(9600);
+    timerSetup();
     ledSetup();
     i2cHandler.setup();
-//    FastLED.addLeds<WS2812B, ledStripPin, COLOR_ORDER>(leds, NUM_LEDS);
     pinMode(ledPin, OUTPUT);
     capacitiveReference = ADCTouch.read(capPin, 500);
 }
@@ -103,7 +115,6 @@ void loop() {
     }
 
     capacitiveValue = ADCTouch.read(capPin, 100) - capacitiveReference;
-//    SERIAL_PRINTLN(capacitiveValue);
     if (capacitiveValue > CAPACITIVE_SENSITIVITY) {
         SERIAL_PRINTLN("touched");
         touched = true;
@@ -145,6 +156,12 @@ void loop() {
             break;
     }
     delay(1);
+}
+
+void incrementTouchCounter() {
+    if (elapsedTime < 127) {
+        elapsedTime++;
+    }
 }
 
 void rBehavior() {
@@ -290,9 +307,20 @@ void fadeOn() {
 }
 
 void fadeOff() {
+    elapsedTime = -1;
     if (brightness < ledDimSpeed) {
         brightness = 0;
     } else {
         brightness -= ledDimSpeed;
+    }
+}
+
+ISR(TIMER1_COMPA_vect) {
+    incrementCounter++;
+    if (incrementCounter >= 8) {
+        incrementCounter = 0;
+        if (touched) {
+            incrementTouchCounter();
+        }
     }
 }

@@ -4,7 +4,7 @@
 #include "Serial.h"
 
 
-I2CLedControl::I2CLedControl(int& isTouched) : command('r'), isNewCommand(false), touchedValue(isTouched) {
+I2CLedControl::I2CLedControl(volatile int8_t & touchedCounter) : command('r'), isNewCommand(false), touchedCounter(touchedCounter) {
     if (!instance) {
         instance = this;
     }
@@ -21,20 +21,7 @@ void I2CLedControl::setup() {
 }
 
 void I2CLedControl::onRequest() {
-//    SERIAL_PRINT("sending via i2c: ");
-//    int test = 43;
-    Wire.write(buffer[0]);
-    Wire.write(buffer[1]);
-    Wire.write(buffer[2]);
-//    SERIAL_PRINT(buffer[0]);
-//    if (buffer[0] == 'r') {
-//        SERIAL_PRINT(" command: status: ");
-//        SERIAL_PRINTLN(isTouched);
-//        Wire.write(isTouched);
-//    } else if (buffer[0] == 'm') {
-//        SERIAL_PRINTLN(" command: message");
-//        Wire.write("message");
-//    }
+    Wire.write(touchedCounter);
 }
 
 void I2CLedControl::onReceive(int bytesReceived) {
@@ -50,6 +37,7 @@ void I2CLedControl::onReceive(int bytesReceived) {
 
     for (auto i = 0; i < bytesReceived-1; i++) {
         buffer[i] = Wire.read();
+        SERIAL_PRINT("setting buffer to ");
         SERIAL_PRINTLN(buffer[i]);
     }
     messageLength = bytesReceived;

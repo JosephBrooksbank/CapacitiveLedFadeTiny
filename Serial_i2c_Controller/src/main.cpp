@@ -23,7 +23,7 @@ void turnOtherLedsOn();
 const uint8_t ledStartingAddress = 2;
 const uint8_t numModules = 1;
 struct Module {
-    bool touched;
+    uint16_t touchedCounter;
     char currentCommand;
     uint8_t address;
 };
@@ -38,7 +38,7 @@ void setup() {
     Serial.begin(115200);
     Serial1.begin(9600);
     for (int i = 0; i < numModules; i++) {
-        modules[i].touched = false;
+        modules[i].touchedCounter = -1;
         modules[i].currentCommand = 'r';
         modules[i].address = i + ledStartingAddress;
     }
@@ -58,31 +58,24 @@ void checkLed() {
     for (int i = 0; i < numModules; i++) {
         int address = modules[i].address;
 
-        Wire.requestFrom(address, 3);
-//    uint8_t highByte = Wire.read();
-//    uint8_t lowByte = Wire.read();
-//    int isOn = (highByte << 8 ) | lowByte;
-        uint8_t r = Wire.read();
-        uint8_t g = Wire.read();
-        uint8_t b = Wire.read();
-//        Serial.print("LED number ");
-//        Serial.print(address);
-//        Serial.print(" is ");
-//        Serial.print(r);
-//        Serial.print(g);
-//        Serial.println(b);
-//    if (isOn == 1) {
-//        Serial.print("LED number ");
-//        Serial.print(address);
-//        Serial.println(" is on!");
-//        modules[i].touched = true;
-//    } else if (isOn == 0) {
-//        modules[i].touched = false;
-//    } else if (isOn == 255) {
-////        Serial.print("ERROR: Expected value from address ");
-////        Serial.print(address);
-////        Serial.println(" but it isn't connected!");
-//    }
+        Wire.requestFrom(address, 1);
+        if (Wire.available()) {
+            int8_t scaledCounterFromModule = Wire.read(); // incremented every 8ms touched
+            if (scaledCounterFromModule != -1) {
+                modules[i].touchedCounter = scaledCounterFromModule * 8;
+                Serial.print("Module ");
+                Serial.print(address);
+                Serial.print(" has been touched for ");
+                if (scaledCounterFromModule == 127) {
+                    Serial.println("more than 1000ms");
+                } else {
+                    Serial.print(modules[i].touchedCounter);
+                    Serial.println("ms");
+                }
+            } else {
+                modules[i].touchedCounter = -1;
+            }
+        }
     }
 }
 
@@ -174,7 +167,7 @@ void checkUserInput() {
 void turnOtherLedsOn() {
     bool noneTouched = true;
     for (uint8_t i = 0; i < numModules; i++) {
-        if (modules[i].touched) {
+        if (modules[i].touchedCounter != -1) {
             noneTouched = false;
             for (uint8_t j = 0; j < numModules; j++) {
                 if (j != i) {
