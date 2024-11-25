@@ -16,27 +16,30 @@
 // qc25500oq will queue "color 255 0 0" and then "o"
 // @: 'run queue' -> run the next item(s) in the command queue, given a uint8_t number of commands to run
 
+uint8_t capacitiveSensitivity = CAPACITIVE_SENSITIVITY;
 const int ledPin = 0;
 //const int ledStripPin = 1;
 const int capPin = 3;
 CRGB leds[NUM_LEDS];
 bool touched;
+uint8_t touchedCounter = 0;
 int capacitiveValue = 0;
 volatile int8_t elapsedTime = -1;
 volatile uint8_t incrementCounter = 0;
-I2CLedControl i2cHandler(elapsedTime);
+int capacitiveReference = 0;
+I2CLedControl i2cHandler(elapsedTime, capacitiveValue, capacitiveReference);
 //I2CEchoHandler i2cHandler;
 
-
+uint8_t debounceDelay = 3;
 const uint8_t ledDimSpeed = 8;
 uint8_t ledFadeOnSpeed = 8;
-int capacitiveReference;
 uint8_t brightness = 0;
 uint8_t ledDimDelay = 10;
 uint8_t lastDetected = 0;
 char currentCommand = 'r';
 char previousCommand = 'r';
 char turnOnMode = 'i';
+char commandMode = 'N';
 
 struct Command {
     char command;
@@ -71,6 +74,11 @@ void ledSetup();
 
 void setAllLedColor(const CRGB &color);
 
+void configBehavior();
+
+void normalMode();
+void configMode();
+
 void timerSetup() {
     TCCR1 = 0; // reset timer1 config
     GTCCR |= (1 || PSR1); // reset prescaler
@@ -90,6 +98,58 @@ void setup() {
     capacitiveReference = ADCTouch.read(capPin, 500);
 }
 
+void normalMode() {
+    capacitiveValue = ADCTouch.read(capPin, 100) - capacitiveReference;
+    if (capacitiveValue > capacitiveSensitivity) {
+        SERIAL_PRINTLN("touched");
+        if (touchedCounter < debounceDelay) {
+            touchedCounter++;
+        }
+        } else {
+            touchedCounter =0;
+            touched = false;
+        }
+        if (touchedCounter == debounceDelay) {
+            touched = true;
+        }
+        switch (currentCommand) {
+            case 'r': {
+                rBehavior();
+                break;
+            }
+            case 'o': {
+                oBehavior();
+                break;
+            }
+            case 'c': {
+                cBehavior();
+                break;
+            }
+            case 'f': {
+                fBehavior();
+                break;
+            }
+            case 'i': {
+                iBehavior();
+                break;
+            }
+            case 'q': {
+                qBehavior();
+                break;
+            }
+            case '@': {
+                byte* buffer = i2cHandler.getBuffer();
+                atBehavior((uint8_t)buffer[0]);
+                break;
+            }
+            case 'C': {
+                configBehavior();
+                break;
+            }
+            default:
+                break;
+        }
+    }
 
 void loop() {
     if (i2cHandler.isNewCommand) {
@@ -98,62 +158,12 @@ void loop() {
         previousCommand = currentCommand;
         currentCommand = i2cHandler.command;
         i2cHandler.isNewCommand = false;
-//        FastLED.setBrightness(255);
-//        FastLED.show();
-//        delay(1000);
-//        if (currentCommand == 'c') {
-//            fill_solid(leds, NUM_LEDS, CRGB::Green);
-//            FastLED.show();
-//            delay(1000);
-//        } else {
-//            fill_solid(leds, NUM_LEDS, CRGB::Red);
-//            FastLED.show();
-//            delay(1000);
-//        }
-//
-//        fill_solid(leds, NUM_LEDS, CRGB::White);
     }
 
-    capacitiveValue = ADCTouch.read(capPin, 100) - capacitiveReference;
-    if (capacitiveValue > CAPACITIVE_SENSITIVITY) {
-        SERIAL_PRINTLN("touched");
-        touched = true;
-    } else {
-        touched = false;
-    }
-    switch (currentCommand) {
-        case 'r': {
-            rBehavior();
-            break;
-        }
-        case 'o': {
-            oBehavior();
-            break;
-        }
-        case 'c': {
-            cBehavior();
-            break;
-        }
-        case 'f': {
-            fBehavior();
-            break;
-        }
-        case 'i': {
-            iBehavior();
-            break;
-        }
-        case 'q': {
-            qBehavior();
-            break;
-        }
-        case '@': {
-            byte* buffer = i2cHandler.getBuffer();
-            atBehavior((uint8_t)buffer[0]);
-            break;
-        }
-
-        default:
-            break;
+    if (commandMode == 'N') {
+        normalMode();
+    } else if (commandMode == 'C') {
+        configMode();
     }
     delay(1);
 }
@@ -176,6 +186,64 @@ void rBehavior() {
 
     FastLED.setBrightness(brightness);
     FastLED.show();
+}
+
+void flashColor( CRGB color, uint16_t delayLength) {
+    uint8_t oldBrightness = FastLED.getBrightness();
+    CRGB oldColor = leds[0];
+    FastLED.setBrightness(255);
+    setAllLedColor(color);
+    FastLED.show();
+    delay(delayLength);
+    setAllLedColor(oldColor);
+    FastLED.setBrightness(oldBrightness);
+    FastLED.show();
+}
+
+void configMode() {
+    switch (currentCommand) {
+        case 'r': {
+            flashColor(CRGB::Yellow, 500);
+            // turn leds off during calibration
+            FastLED.setBrightness(0);
+            FastLED.show();
+            delay(500);
+            int capacitiveReference1 = ADCTouch.read(capPin, 500);
+            delay(1000);
+            int capacitiveReference2 = ADCTouch.read(capPin, 500);
+            delay(1000);
+            int capacitiveReference3 = ADCTouch.read(capPin, 500);
+            capacitiveReference = (capacitiveReference1 + capacitiveReference2 + capacitiveReference3) / 3;
+            currentCommand = previousCommand;
+            FastLED.setBrightness(255);
+            FastLED.show();
+            setAllLedColor(CRGB::Red);
+            FastLED.show();
+            break;
+        }
+        case 'N': {
+            commandMode = 'N';
+            currentCommand = 'r';
+            setAllLedColor(CRGB::White);
+            FastLED.show();
+            break;
+        }
+        case 's': {
+            byte *buffer = i2cHandler.getBuffer();
+            capacitiveSensitivity = buffer[0];
+            currentCommand = previousCommand;
+            break;
+        }
+        case 'd': {
+            flashColor(CRGB::DarkBlue, 500);
+            byte *buffer = i2cHandler.getBuffer();
+            debounceDelay = buffer[0];
+            currentCommand = previousCommand;
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 void oBehavior() {
@@ -271,6 +339,14 @@ void atBehavior(uint8_t numCommands) {
         commandCursor++;
         if (commandCursor == 3) commandCursor = 0;
     }
+}
+
+void configBehavior() {
+    setAllLedColor(CRGB::Red);
+    FastLED.setBrightness(255);
+    FastLED.show();
+    commandMode = 'C';
+    currentCommand = ' ';
 }
 
 void ledSetup() {

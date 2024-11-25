@@ -2,9 +2,9 @@
 #define CONFIG_H
 
 // How sensitive the capacitive sensor is. Lower = more sensitive.
-#define CAPACITIVE_SENSITIVITY 8
+#define CAPACITIVE_SENSITIVITY 5
 const int ledStripPin = 1;
-#define I2C_ADDRESS 2
+#define I2C_ADDRESS 5
 #define txPin 4
 
 // How many LEDs in the string. Limited by memory available.

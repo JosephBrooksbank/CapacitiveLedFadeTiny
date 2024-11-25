@@ -20,7 +20,7 @@ void sendGlobalCommand(char command);
 void turnOtherLedsOn();
 
 
-const uint8_t ledStartingAddress = 2;
+const uint8_t ledStartingAddress = 7;
 const uint8_t numModules = 1;
 struct Module {
     uint16_t touchedCounter;
@@ -54,24 +54,39 @@ void loop() {
 //    delay(1);
 }
 
+int readIntFromI2C() {
+    int value = 0;
+    byte highByte = Wire.read();
+    byte lowByte = Wire.read();
+    value = (highByte << 8) | lowByte;
+    return value;
+}
+
 void checkLed() {
     for (int i = 0; i < numModules; i++) {
         int address = modules[i].address;
 
-        Wire.requestFrom(address, 1);
+        Wire.requestFrom(address, 4);
         if (Wire.available()) {
             int8_t scaledCounterFromModule = Wire.read(); // incremented every 8ms touched
+
+            int capacitiveValue = readIntFromI2C();
+            uint8_t sensitivity = Wire.read();
             if (scaledCounterFromModule != -1) {
                 modules[i].touchedCounter = scaledCounterFromModule * 8;
                 Serial.print("Module ");
                 Serial.print(address);
                 Serial.print(" has been touched for ");
                 if (scaledCounterFromModule == 127) {
-                    Serial.println("more than 1000ms");
+                    Serial.print("more than 1000ms");
                 } else {
                     Serial.print(modules[i].touchedCounter);
-                    Serial.println("ms");
+                    Serial.print("ms");
                 }
+                Serial.print(" Capacitive value: ");
+                Serial.println(capacitiveValue);
+                Serial.print("Sensitivity: ");
+                Serial.println(sensitivity);
             } else {
                 modules[i].touchedCounter = -1;
             }
@@ -81,11 +96,31 @@ void checkLed() {
 
 void checkUserInput() {
     if (Serial.available()) {
-        if (currentCommand == ' ') {
-            currentCommand = Serial.read();
-            Serial.print("setting command to ");
-            Serial.println(currentCommand);
-            if (currentCommand == 'q') {
+        String numberString = "";
+        int numberValue = 0;
+        while (Serial.available()) {
+            char inChar = Serial.read();
+            Serial.print("inChar: ");
+            Serial.println(inChar);
+            if (isDigit(inChar)) {
+                Serial.print("adding digit: ");
+                Serial.println(inChar);
+                numberString += (char) inChar;
+            }
+            else {
+                currentCommand = inChar;
+            }
+        }
+        Serial.print("setting numberValue to ");
+        Serial.println(numberString);
+        numberValue = numberString.toInt();
+
+        Serial.print("command: ");
+        Serial.print(currentCommand);
+        Serial.print(numberValue);
+
+        switch (currentCommand) {
+            case 'q': {
                 Serial.println("queuing commands...");
                 buffer[0] = 'f';
                 buffer[1] = 1;
@@ -95,28 +130,17 @@ void checkUserInput() {
                 buffer[5] = 0;
                 buffer[6] = 'o';
                 sendGlobalCommand('q', buffer, 7, false);
-                currentCommand = ' ';
-            } else if (currentCommand == '@') {
+                break;
+            }
+            case '@': {
                 Serial.println("sending commands");
                 buffer[0] = 3;
                 sendGlobalCommand('@', buffer, 1, false);
                 currentCommand = ' ';
-            } else if (currentCommand == 'r') {
-                Serial.println("setting back to r");
-                sendGlobalCommand('r');
-                currentCommand = ' ';
-            } else if (currentCommand == 'o') {
-                Serial.println("sending o");
-                sendGlobalCommand('o');
-                currentCommand = ' ';
-            } else if (currentCommand == '1') {
-                buffer[0] = 1;
-                sendGlobalCommand('f', buffer, 1, false);
-                currentCommand = ' ';
-            } else if (currentCommand == 'i') {
-                sendGlobalCommand('i');
-                currentCommand = ' ';
-            } else if (currentCommand == 'w') {
+                break;
+            }
+
+            case 'w': {
                 buffer[0] = 255;
                 buffer[1] = 255;
                 buffer[2] = 255;
@@ -125,44 +149,16 @@ void checkUserInput() {
                 sendGlobalCommand('r');
                 delay(50);
                 sendGlobalCommand('i');
-            } else {
-                Serial.println("waiting for next input...");
-        }
-    } else {
-
-        switch (currentCommand) {
-            case 'c': {
-                if (Serial.available()) {
-                    char color = Serial.read();
-                    switch (color) {
-                        case 'r': {
-                            Serial.println("changing color to red");
-                            buffer[0] = 255;
-                            buffer[1] = 0;
-                            buffer[2] = 0;
-                            sendGlobalCommand('c', buffer, 3, false);
-                        }
-                    }
-                }
                 break;
             }
-
-            case 'f': {
-                buffer[0] = Serial.read();
-                Serial.print("Setting turn on mode to fade, with speed ");
-                Serial.println((uint8_t) buffer[0]);
-                sendGlobalCommand('f', buffer, 1, false);
-                break;
+            default: {
+                buffer[0] = numberValue;
+                sendGlobalCommand(currentCommand, buffer, 1, false);
             }
-            default:
-                Serial.print("Unknown input ");
-                Serial.println(currentCommand);
         }
-        currentCommand = ' ';
     }
 }
 
-}
 
 void turnOtherLedsOn() {
     bool noneTouched = true;

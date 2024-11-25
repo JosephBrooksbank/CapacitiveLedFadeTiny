@@ -15,6 +15,7 @@ public:
     virtual void onReceive(int bytesReceived) = 0;
     virtual void onRequest() = 0;
     virtual void setup() = 0;
+    static void writeInt(int value);
     byte*  getBuffer();
 
 protected:

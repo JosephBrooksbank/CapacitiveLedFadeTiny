@@ -4,7 +4,13 @@
 #include "Serial.h"
 
 
-I2CLedControl::I2CLedControl(volatile int8_t & touchedCounter) : command('r'), isNewCommand(false), touchedCounter(touchedCounter) {
+I2CLedControl::I2CLedControl(volatile int8_t & touchedCounter, int& capacitiveValue, int& capacitiveReference) :
+command('r'),
+isNewCommand(false),
+touchedCounter(touchedCounter),
+capacitiveValue(capacitiveValue),
+capacitiveReference(capacitiveReference)
+{
     if (!instance) {
         instance = this;
     }
@@ -20,8 +26,13 @@ void I2CLedControl::setup() {
     Wire.onRequest(requestEventWrapper);
 }
 
+// first byte is how many 8ms increments the capacitive sensor has been touched
+// next two bytes are the capacitive value, int
+
 void I2CLedControl::onRequest() {
     Wire.write(touchedCounter);
+    I2CEventHandler::writeInt(capacitiveValue);
+    I2CEventHandler::writeInt(capacitiveReference);
 }
 
 void I2CLedControl::onReceive(int bytesReceived) {
