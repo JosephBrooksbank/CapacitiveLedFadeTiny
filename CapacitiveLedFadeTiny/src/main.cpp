@@ -6,15 +6,66 @@
 #include "I2CLedControl.hpp"
 #include "I2CEchoHandler.hpp"
 
-/// commands
+/// Normal Mode Commands
+// M: 'mode(char m)': set the visual mode of the module based on ${m} TODO
 // r: 'read' -> function as normal. turn on led in response to touch and report status when requested
 // o: 'on' -> turn on led, continue to report status when requested. Will continue to be on until given a different command.
 // c: 'color' -> set current led strip color, without worrying about current brightness. Goes back to previous command after. Uses 3 bytes from buffer as RGB
-// f: 'fade' -> change turn on mode to 'fade in', rather than turning on instantly. next byte is how fast to turn on
+// f: 'fade(uint8_t fadeOnSpeed)' -> change turn on mode to 'fade in', rather than turning on instantly. n
 // i: 'instant' -> default turn on mode, when touch (or 'on') then set brightness to max with no ramp up
 // q: 'queue' -> queue command(s). the buffer will contain a list of commands, terminated in another q. eg
 // qc25500oq will queue "color 255 0 0" and then "o"
 // @: 'run queue' -> run the next item(s) in the command queue, given a uint8_t number of commands to run
+// C: 'Config Mode' -> enter config mode, enable a different set of commands.
+// t: 'touched(uint8_t address)' -> (usually global) alert that ${address} has been touched TODO
+// u: 'unTouched(uint8_t address)' -> (usually global) alert that ${address} is no longer touched TODO
+
+/// Config Mode Commands  (LEDs: red)
+// r: 'recalibrate' -> read a new capacitive value for the baseline. Flashes yellow as confirm, then shuts LEDs down
+// during calibration.
+// s: 'sensitivity' -> followed by a byte. Set the sensitivity for touch to the new value
+// d: 'debounce' -> followed by a byte. Set the 'debounce' value, the number of positive touch reads before the leds turn on.
+// N: 'normal' -> return to normal mode.
+
+
+// Visual Modes TODO
+// n: 'normal' - turn on only when touched TODO
+// r: 'ripple' - when any surrounding cells are touched, turn on after a moment TODO
+
+const uint8_t rows = 2;
+const uint8_t columns = 2;
+// physical layout of the modules
+const uint8_t addressMap[rows][columns] = {
+        {5,2},
+        {3, 4}
+};
+
+struct position {
+    int8_t row;
+    int8_t col;
+};
+
+position findPosition(uint8_t address) {
+    for (int8_t row = 0; row < rows; row++) {
+        for (int8_t col = 0; col < columns; col++) {
+            if (addressMap[row][col] == address) {
+                return position {row, col};
+            }
+        }
+    }
+    return position {-1,-1};
+}
+position selfPosition;
+bool isNeighbor(uint8_t address) {
+    position target = findPosition(address);
+    if (target.row == -1) {
+        return false;
+    }
+    return (selfPosition.row == target.row && abs(selfPosition.col - target.col) == 1) ||
+            (selfPosition.col == target.col && abs(selfPosition.row - target.row) == 1);
+}
+
+
 
 uint8_t capacitiveSensitivity = CAPACITIVE_SENSITIVITY;
 const int ledPin = 0;
@@ -28,6 +79,14 @@ volatile int8_t elapsedTime = -1;
 volatile uint8_t incrementCounter = 0;
 int capacitiveReference = 0;
 I2CLedControl i2cHandler(elapsedTime, capacitiveValue, capacitiveReference);
+struct rippleParameters {
+    // how long before we start turning on in ms
+    uint16_t delayMs = 100;
+    // how long it takes to fade on, in brightness amount to increase per ms
+    uint16_t fadeSpeed = 4;
+    // close of a neighbor the original touch must be to turn on
+    uint8_t steps = 1;
+};
 //I2CEchoHandler i2cHandler;
 
 uint8_t debounceDelay = 3;
@@ -90,6 +149,7 @@ void timerSetup() {
 }
 
 void setup() {
+    selfPosition = findPosition(I2C_ADDRESS);
     SERIAL_BEGIN(9600);
     timerSetup();
     ledSetup();
