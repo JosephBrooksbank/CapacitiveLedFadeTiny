@@ -7,6 +7,15 @@ const int ledStripPin = 1;
 #define I2C_ADDRESS 5
 #define txPin 4
 
+// physical layout of the table, approximated
+#define NUM_ROWS 2
+#define NUM_COLS 2
+#include "Arduino.h"
+const uint8_t ADDRESS_MAP[NUM_ROWS][NUM_COLS] = {
+        {5,2},
+        {3, 4}
+};
+
 // How many LEDs in the string. Limited by memory available.
 // Max with serial: 30
 // Max without: 52+

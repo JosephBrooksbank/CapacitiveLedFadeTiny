@@ -6,9 +6,9 @@
 #ifndef CAPACITIVELEDFADETINY_SERIAL_H
 #define CAPACITIVELEDFADETINY_SERIAL_H
 
+#ifdef USE_SERIAL
 #include "SendOnlySoftwareSerial.h"
 
-#ifdef USE_SERIAL
 
 extern SendOnlySoftwareSerial mySerial;  // Declare mySerial as an extern variable
 #define SERIAL_BEGIN(baud) mySerial.begin(baud)

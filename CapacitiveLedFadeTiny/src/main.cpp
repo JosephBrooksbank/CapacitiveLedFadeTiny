@@ -5,6 +5,41 @@
 #include "Serial.h"
 #include "I2CLedControl.hpp"
 #include "I2CEchoHandler.hpp"
+#include "AddressMap.hpp"
+
+void turnOn();
+
+void fadeOn();
+
+void fadeOff();
+
+void rBehavior();
+
+void oBehavior();
+
+void cBehavior();
+
+void fBehavior();
+
+void iBehavior();
+
+void qBehavior();
+
+void atBehavior(uint8_t numCommands);
+
+void MBehavior(char m);
+
+void tBehavior(uint8_t address);
+void uBehavior(uint8_t address);
+
+void ledSetup();
+
+void setAllLedColor(const CRGB &color);
+
+void configBehavior();
+
+void normalMode();
+void configMode();
 
 /// Normal Mode Commands
 // M: 'mode(char m)': set the visual mode of the module based on ${m} TODO
@@ -26,46 +61,13 @@
 // s: 'sensitivity' -> followed by a byte. Set the sensitivity for touch to the new value
 // d: 'debounce' -> followed by a byte. Set the 'debounce' value, the number of positive touch reads before the leds turn on.
 // N: 'normal' -> return to normal mode.
+// p: 'sample' -> number of samples to take per reading. TODO
 
 
 // Visual Modes TODO
 // n: 'normal' - turn on only when touched TODO
+// o: 'on' - turn on and stay on until a different command is given TODO
 // r: 'ripple' - when any surrounding cells are touched, turn on after a moment TODO
-
-const uint8_t rows = 2;
-const uint8_t columns = 2;
-// physical layout of the modules
-const uint8_t addressMap[rows][columns] = {
-        {5,2},
-        {3, 4}
-};
-
-struct position {
-    int8_t row;
-    int8_t col;
-};
-
-position findPosition(uint8_t address) {
-    for (int8_t row = 0; row < rows; row++) {
-        for (int8_t col = 0; col < columns; col++) {
-            if (addressMap[row][col] == address) {
-                return position {row, col};
-            }
-        }
-    }
-    return position {-1,-1};
-}
-position selfPosition;
-bool isNeighbor(uint8_t address) {
-    position target = findPosition(address);
-    if (target.row == -1) {
-        return false;
-    }
-    return (selfPosition.row == target.row && abs(selfPosition.col - target.col) == 1) ||
-            (selfPosition.col == target.col && abs(selfPosition.row - target.row) == 1);
-}
-
-
 
 uint8_t capacitiveSensitivity = CAPACITIVE_SENSITIVITY;
 const int ledPin = 0;
@@ -99,6 +101,7 @@ char currentCommand = 'r';
 char previousCommand = 'r';
 char turnOnMode = 'i';
 char commandMode = 'N';
+AddressMap addressMap;
 
 struct Command {
     char command;
@@ -109,34 +112,6 @@ Command queuedCommands[3]{{'q'},
                           {'q'}};
 uint8_t commandCursor = 0;
 
-void turnOn();
-
-void fadeOn();
-
-void fadeOff();
-
-void rBehavior();
-
-void oBehavior();
-
-void cBehavior();
-
-void fBehavior();
-
-void iBehavior();
-
-void qBehavior();
-
-void atBehavior(uint8_t numCommands);
-
-void ledSetup();
-
-void setAllLedColor(const CRGB &color);
-
-void configBehavior();
-
-void normalMode();
-void configMode();
 
 void timerSetup() {
     TCCR1 = 0; // reset timer1 config
@@ -149,7 +124,7 @@ void timerSetup() {
 }
 
 void setup() {
-    selfPosition = findPosition(I2C_ADDRESS);
+
     SERIAL_BEGIN(9600);
     timerSetup();
     ledSetup();
