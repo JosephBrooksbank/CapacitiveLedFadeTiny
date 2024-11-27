@@ -5,7 +5,8 @@
 #define CAPACITIVE_SENSITIVITY 5
 const int ledStripPin = 1;
 #define I2C_ADDRESS 5
-#define txPin 4
+
+#define BUFFER_SIZE 10
 
 // physical layout of the table, approximated
 #define NUM_ROWS 2
@@ -21,9 +22,5 @@ const uint8_t ADDRESS_MAP[NUM_ROWS][NUM_COLS] = {
 // Max without: 52+
 #define NUM_LEDS 30
 #define COLOR_ORDER GRB
-
-// if we should include (software) serial for logging
-//#define USE_SERIAL
-
 
 #endif

@@ -2,9 +2,7 @@
 #include <ADCTouch.h>
 #include <config.h>
 #include "FastLED.h"
-#include "Serial.h"
 #include "I2CLedControl.hpp"
-#include "I2CEchoHandler.hpp"
 #include "AddressMap.hpp"
 
 void turnOn();
@@ -69,10 +67,10 @@ void configMode();
 // o: 'on' - turn on and stay on until a different command is given TODO
 // r: 'ripple' - when any surrounding cells are touched, turn on after a moment TODO
 
-uint8_t capacitiveSensitivity = CAPACITIVE_SENSITIVITY;
-const int ledPin = 0;
-//const int ledStripPin = 1;
-const int capPin = 3;
+const struct pins {
+    const int ledPin = 0;
+    const int capPin = 3;
+} pins;
 CRGB leds[NUM_LEDS];
 bool touched;
 uint8_t touchedCounter = 0;
@@ -90,6 +88,11 @@ struct rippleParameters {
     uint8_t steps = 1;
 };
 //I2CEchoHandler i2cHandler;
+
+struct touchParameters {
+    uint8_t debounceDelay = 3;
+    uint8_t capacitiveSensitivity = CAPACITIVE_SENSITIVITY;
+} touchParameters;
 
 uint8_t debounceDelay = 3;
 const uint8_t ledDimSpeed = 8;
@@ -125,18 +128,16 @@ void timerSetup() {
 
 void setup() {
 
-    SERIAL_BEGIN(9600);
     timerSetup();
     ledSetup();
     i2cHandler.setup();
-    pinMode(ledPin, OUTPUT);
-    capacitiveReference = ADCTouch.read(capPin, 500);
+    pinMode(pins.ledPin, OUTPUT);
+    capacitiveReference = ADCTouch.read(pins.capPin, 500);
 }
 
 void normalMode() {
-    capacitiveValue = ADCTouch.read(capPin, 100) - capacitiveReference;
-    if (capacitiveValue > capacitiveSensitivity) {
-        SERIAL_PRINTLN("touched");
+    capacitiveValue = ADCTouch.read(pins.capPin, 100) - capacitiveReference;
+    if (capacitiveValue > touchParameters.capacitiveSensitivity) {
         if (touchedCounter < debounceDelay) {
             touchedCounter++;
         }
@@ -188,8 +189,6 @@ void normalMode() {
 
 void loop() {
     if (i2cHandler.isNewCommand) {
-        SERIAL_PRINT("New command: ");
-        SERIAL_PRINTLN(i2cHandler.command);
         previousCommand = currentCommand;
         currentCommand = i2cHandler.command;
         i2cHandler.isNewCommand = false;
@@ -243,11 +242,11 @@ void configMode() {
             FastLED.setBrightness(0);
             FastLED.show();
             delay(500);
-            int capacitiveReference1 = ADCTouch.read(capPin, 500);
+            int capacitiveReference1 = ADCTouch.read(pins.capPin, 500);
             delay(1000);
-            int capacitiveReference2 = ADCTouch.read(capPin, 500);
+            int capacitiveReference2 = ADCTouch.read(pins.capPin, 500);
             delay(1000);
-            int capacitiveReference3 = ADCTouch.read(capPin, 500);
+            int capacitiveReference3 = ADCTouch.read(pins.capPin, 500);
             capacitiveReference = (capacitiveReference1 + capacitiveReference2 + capacitiveReference3) / 3;
             currentCommand = previousCommand;
             FastLED.setBrightness(255);
@@ -265,7 +264,7 @@ void configMode() {
         }
         case 's': {
             byte *buffer = i2cHandler.getBuffer();
-            capacitiveSensitivity = buffer[0];
+            touchParameters.capacitiveSensitivity = buffer[0];
             currentCommand = previousCommand;
             break;
         }

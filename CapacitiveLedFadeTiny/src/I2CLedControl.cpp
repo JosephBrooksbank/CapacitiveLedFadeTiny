@@ -1,7 +1,6 @@
 #include "I2CLedControl.hpp"
 #include "Wire.h"
 #include "config.h"
-#include "Serial.h"
 
 
 I2CLedControl::I2CLedControl(volatile int8_t & touchedCounter, int& capacitiveValue, int& capacitiveReference) :
@@ -29,10 +28,10 @@ void I2CLedControl::setup() {
 // first byte is how many 8ms increments the capacitive sensor has been touched
 // next two bytes are the capacitive value, int
 
-void I2CLedControl::onRequest() {
+void I2CLedControl::onRequest() const {
     Wire.write(touchedCounter);
-    I2CEventHandler::writeInt(capacitiveValue);
-    I2CEventHandler::writeInt(capacitiveReference);
+    writeInt(capacitiveValue);
+    writeInt(capacitiveReference);
 }
 
 void I2CLedControl::onReceive(int bytesReceived) {
@@ -48,8 +47,6 @@ void I2CLedControl::onReceive(int bytesReceived) {
 
     for (auto i = 0; i < bytesReceived-1; i++) {
         buffer[i] = Wire.read();
-        SERIAL_PRINT("setting buffer to ");
-        SERIAL_PRINTLN(buffer[i]);
     }
     messageLength = bytesReceived;
 }
@@ -67,5 +64,13 @@ void I2CLedControl::requestEventWrapper() {
     }
 }
 
+void I2CLedControl::writeInt(int value) {
+    Wire.write((byte)(value >> 8));
+    Wire.write((byte)value);
+}
+
+byte* I2CLedControl::getBuffer() {
+    return buffer;
+}
 
 I2CLedControl *I2CLedControl::instance = nullptr;
