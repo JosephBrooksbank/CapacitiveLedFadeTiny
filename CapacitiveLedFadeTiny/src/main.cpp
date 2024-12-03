@@ -19,7 +19,6 @@ void cBehavior();
 
 void fBehavior();
 
-void iBehavior();
 
 void qBehavior();
 
@@ -40,18 +39,17 @@ void normalMode();
 void configMode();
 
 /// Normal Mode Commands
-// M: 'mode(char m)': set the visual mode of the module based on ${m} TODO
+// M: 'mode(Mode m)': set the visual mode of the module based on ${m}
 // r: 'read' -> function as normal. turn on led in response to touch and report status when requested
 // o: 'on' -> turn on led, continue to report status when requested. Will continue to be on until given a different command.
 // c: 'color' -> set current led strip color, without worrying about current brightness. Goes back to previous command after. Uses 3 bytes from buffer as RGB
-// f: 'fade(uint8_t fadeOnSpeed)' -> change turn on mode to 'fade in', rather than turning on instantly. n
-// i: 'instant' -> default turn on mode, when touch (or 'on') then set brightness to max with no ramp up
 // q: 'queue' -> queue command(s). the buffer will contain a list of commands, terminated in another q. eg
 // qc25500oq will queue "color 255 0 0" and then "o"
 // @: 'run queue' -> run the next item(s) in the command queue, given a uint8_t number of commands to run
 // C: 'Config Mode' -> enter config mode, enable a different set of commands.
 // t: 'touched(uint8_t address)' -> (usually global) alert that ${address} has been touched TODO
 // u: 'unTouched(uint8_t address)' -> (usually global) alert that ${address} is no longer touched TODO
+// f: 'fade(uint8_t speed' -> set the fade on speed
 
 /// Config Mode Commands  (LEDs: red)
 // r: 'recalibrate' -> read a new capacitive value for the baseline. Flashes yellow as confirm, then shuts LEDs down
@@ -66,6 +64,13 @@ void configMode();
 // n: 'normal' - turn on only when touched TODO
 // o: 'on' - turn on and stay on until a different command is given TODO
 // r: 'ripple' - when any surrounding cells are touched, turn on after a moment TODO
+
+enum Mode {
+    NORMAL = 0,
+    ON = 1,
+    RIPPLE = 2,
+    CONFIG = 3,
+};
 
 // pins we actually use
 const struct pins {
@@ -91,12 +96,12 @@ struct touchValues {
 
 struct rippleParameters {
     // how long before we start turning on in ms
-    uint16_t delayMs = 100;
+    int delayMs = 100;
     // how long it takes to fade on, in brightness amount to increase per ms
     uint16_t fadeSpeed = 4;
     // close of a neighbor the original touch must be to turn on
     uint8_t steps = 1;
-};
+} rippleParameters;
 
 // Parameters set by config related to touch detection
 struct touchParameters {
@@ -107,7 +112,7 @@ struct touchParameters {
 // Parameters set by config related to LED behavior
 struct animationParameters {
     uint8_t ledDimSpeed = 8;
-    uint8_t ledFadeOnSpeed = 8;
+    uint8_t ledFadeOnSpeed = 255;
     uint8_t brightness = 0;
     uint8_t ledDimDelay = 10;
 
@@ -116,10 +121,10 @@ struct animationParameters {
 CRGB leds[NUM_LEDS];
 I2CLedControl i2cHandler(touchValues.elapsedTime, touchValues.capacitiveValue, touchValues.capacitiveReference);
 
+volatile int turnOnCounter = -1;
+
 char currentCommand = 'r';
-char previousCommand = 'r';
-char turnOnMode = 'i';
-char commandMode = 'N';
+Mode mode = NORMAL;
 AddressMap addressMap;
 
 struct Command {
@@ -132,6 +137,7 @@ Command queuedCommands[3]{{'q'},
                           {'q'}};
 uint8_t commandCursor = 0;
 
+Neighbors neighborsOn = {false, false, false, false, false, false, false, false};
 
 void timerSetup() {
     TCCR1 = 0; // reset timer1 config
@@ -154,6 +160,10 @@ void setup() {
 
 void normalMode() {
     touchValues.capacitiveValue = ADCTouch.read(pins.capPin, 100) - touchValues.capacitiveReference;
+    // if all neighbors are off, don't turn on from them
+    if (turnOnCounter == 0) {
+        turnOn();
+    }
     if (touchValues.capacitiveValue > touchParameters.capacitiveSensitivity) {
         if (touchValues.touchedCounter < touchParameters.debounceDelay) {
             touchValues.touchedCounter++;
@@ -182,10 +192,6 @@ void normalMode() {
                 fBehavior();
                 break;
             }
-            case 'i': {
-                iBehavior();
-                break;
-            }
             case 'q': {
                 qBehavior();
                 break;
@@ -199,6 +205,21 @@ void normalMode() {
                 configBehavior();
                 break;
             }
+            case 't': {
+                byte* buffer = i2cHandler.getBuffer();
+                tBehavior((uint8_t)buffer[0]);
+                break;
+            }
+            case 'u': {
+                byte* buffer = i2cHandler.getBuffer();
+                uBehavior((uint8_t)buffer[0]);
+                break;
+            }
+            case 'M': {
+                byte* buffer = i2cHandler.getBuffer();
+                MBehavior((char)buffer[0]);
+                break;
+            }
             default:
                 break;
         }
@@ -206,17 +227,15 @@ void normalMode() {
 
 void loop() {
     if (i2cHandler.isNewCommand) {
-        previousCommand = currentCommand;
         currentCommand = i2cHandler.command;
         i2cHandler.isNewCommand = false;
     }
 
-    if (commandMode == 'N') {
+    if (mode == NORMAL) {
         normalMode();
-    } else if (commandMode == 'C') {
+    } else if (mode == CONFIG) {
         configMode();
     }
-    delay(1);
 }
 
 void incrementTouchCounter() {
@@ -237,6 +256,43 @@ void rBehavior() {
 
     FastLED.setBrightness(animationParameters.brightness);
     FastLED.show();
+}
+
+void tBehavior(uint8_t address) {
+    neighborsOn |= addressMap.isNeighbor(address);
+    if (neighborsOn && turnOnCounter == -1) {
+        turnOnCounter = rippleParameters.delayMs;
+    }
+}
+
+void uBehavior(uint8_t address) {
+    neighborsOn &= ~addressMap.isNeighbor(address);
+    if (neighborsOn == 0) {
+        turnOnCounter = -1;
+    }
+}
+
+void MBehavior(char c) {
+    switch (c) {
+        case 'n': {
+            mode = NORMAL;
+            break;
+        }
+        case 'o': {
+            mode = ON;
+            break;
+        }
+        case 'r': {
+            mode = RIPPLE;
+            break;
+        }
+        case 'c': {
+            mode = CONFIG;
+            break;
+        }
+        default:
+            break;
+    }
 }
 
 void flashColor( CRGB color, uint16_t delayLength) {
@@ -265,7 +321,6 @@ void configMode() {
             delay(1000);
             int capacitiveReference3 = ADCTouch.read(pins.capPin, 500);
             touchValues.capacitiveReference = (capacitiveReference1 + capacitiveReference2 + capacitiveReference3) / 3;
-            currentCommand = previousCommand;
             FastLED.setBrightness(255);
             FastLED.show();
             setAllLedColor(CRGB::Red);
@@ -273,7 +328,7 @@ void configMode() {
             break;
         }
         case 'N': {
-            commandMode = 'N';
+            mode = NORMAL;
             currentCommand = 'r';
             setAllLedColor(CRGB::White);
             FastLED.show();
@@ -282,14 +337,12 @@ void configMode() {
         case 's': {
             byte *buffer = i2cHandler.getBuffer();
             touchParameters.capacitiveSensitivity = buffer[0];
-            currentCommand = previousCommand;
             break;
         }
         case 'd': {
             flashColor(CRGB::DarkBlue, 500);
             byte *buffer = i2cHandler.getBuffer();
             touchParameters.debounceDelay = buffer[0];
-            currentCommand = previousCommand;
             break;
         }
         default:
@@ -311,19 +364,11 @@ void cBehavior() {
     uint8_t blue = buffer[2];
     setAllLedColor(CRGB(red, green, blue));
     FastLED.show();
-    currentCommand = previousCommand;
 }
 
 void fBehavior() {
     byte *buffer = i2cHandler.getBuffer();
     animationParameters.ledFadeOnSpeed = buffer[0];
-    turnOnMode = 'f';
-    currentCommand = previousCommand;
-}
-
-void iBehavior() {
-    turnOnMode = 'i';
-    currentCommand = previousCommand;
 }
 
 void qBehavior() {
@@ -361,11 +406,9 @@ void qBehavior() {
             }
         }
     }
-    currentCommand = previousCommand;
 }
 
 void atBehavior(uint8_t numCommands) {
-    currentCommand = previousCommand;
     for (uint8_t i = 0; i < numCommands; i++) {
         switch (queuedCommands[commandCursor].command) {
             case 'q':
@@ -380,12 +423,6 @@ void atBehavior(uint8_t numCommands) {
                 oBehavior();
                 currentCommand = 'o';
             }
-            case 'f': {
-                animationParameters.ledFadeOnSpeed = queuedCommands[commandCursor].data[0];
-                delete[](queuedCommands[commandCursor].data);
-                turnOnMode = 'f';
-            }
-
         }
         commandCursor++;
         if (commandCursor == 3) commandCursor = 0;
@@ -396,7 +433,7 @@ void configBehavior() {
     setAllLedColor(CRGB::Red);
     FastLED.setBrightness(255);
     FastLED.show();
-    commandMode = 'C';
+    mode = CONFIG;
     currentCommand = ' ';
 }
 
@@ -413,16 +450,7 @@ void setAllLedColor(const CRGB &color) {
 }
 
 void turnOn() {
-    switch (turnOnMode) {
-        default:
-        case 'o': {
-            animationParameters.brightness = 255;
-            break;
-        }
-        case 'f': {
             fadeOn();
-        }
-    }
 }
 
 void fadeOn() {
@@ -443,6 +471,9 @@ void fadeOff() {
 }
 
 ISR(TIMER1_COMPA_vect) {
+    if (turnOnCounter > 0) {
+        turnOnCounter--;
+    }
     postScalers.counter8ms++;
     if (postScalers.counter8ms >= 8) {
         postScalers.counter8ms = 0;
