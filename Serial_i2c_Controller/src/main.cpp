@@ -20,7 +20,7 @@ void sendGlobalCommand(char command);
 void turnOtherLedsOn();
 
 
-const uint8_t ledStartingAddress = 7;
+const uint8_t ledStartingAddress = 6;
 const uint8_t numModules = 1;
 struct Module {
     uint16_t touchedCounter;
@@ -87,7 +87,11 @@ void checkLed() {
                 Serial.println(capacitiveValue);
                 Serial.print("Sensitivity: ");
                 Serial.println(sensitivity);
+                buffer[0] = address;
+                sendGlobalCommand('t', buffer, 1, false);
             } else {
+                buffer[0] = address;
+                sendGlobalCommand('u', buffer, 1, false);
                 modules[i].touchedCounter = -1;
             }
         }

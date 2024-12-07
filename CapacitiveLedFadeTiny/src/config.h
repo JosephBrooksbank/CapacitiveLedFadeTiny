@@ -3,8 +3,13 @@
 
 // How sensitive the capacitive sensor is. Lower = more sensitive.
 #define CAPACITIVE_SENSITIVITY 3
-const int ledStripPin = 1;
+#define CAPACITIVE_PIN 3
+const int LED_PIN = 1;
 #define I2C_ADDRESS 6
+#define NUM_GROUPS 4
+// if needed in the future - can poll groups rather than individual addresses.
+#define GROUP (I2C_ADDRESS % NUM_GROUPS)
+
 
 #define BUFFER_SIZE 10
 
