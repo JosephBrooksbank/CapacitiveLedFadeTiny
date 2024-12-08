@@ -16,13 +16,14 @@ void Capacitive::setSensitivity(uint8_t sensitivity) {
 
 bool Capacitive::isTouched() {
     int value = ADCTouch.read(pin, 70);
-    if( value - reference > context.capacitive_sensitivity) {
+    context.capacitive_value = value - reference;
+    if( context.capacitive_value > context.capacitive_sensitivity) {
         if (cyclesTouched < 255) {
             cyclesTouched++;
         }
         if (cyclesTouched > context.capacitive_debounce) {
-            return true;
             state = TOUCHED;
+            return true;
         }
     }
     state = NOT_TOUCHED;

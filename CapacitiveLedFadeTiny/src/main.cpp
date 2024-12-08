@@ -3,27 +3,27 @@
 #include "LED.h"
 #include "main.h"
 #include "Capacitive.h"
+#include "LedBehaviorController.h"
+#include "I2CLedControl.hpp"
 
 CRGB leds[NUM_LEDS];
 LED led(leds, NUM_LEDS);
 Capacitive capacitive(CAPACITIVE_PIN);
+LedBehaviorController ledBehaviorController(&led, &capacitive);
+I2CLedControl i2CLedControl;
 
 
 void setup() {
     FastLED.addLeds<WS2812, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
     timerSetup();
+    i2CLedControl.setup();
     capacitive.init();
     led.init();
 }
 
 void loop() {
-    if (capacitive.isTouched()){
-        led.turnOn();
-    } else {
-        led.turnOff();
-    }
-
-    led.step();
+    ledBehaviorController.step();
+    delay(1);
 }
 
 
@@ -39,5 +39,6 @@ void timerSetup() {
 
 ISR(TIMER1_COMPA_vect) {
     capacitive.tick();
+    ledBehaviorController.tick();
     led.tick();
 }

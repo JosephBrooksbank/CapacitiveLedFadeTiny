@@ -1,21 +1,14 @@
 #include "I2CLedControl.hpp"
 #include "Wire.h"
 #include "config.h"
+#include "context.h"
 
 
-I2CLedControl::I2CLedControl(volatile int8_t & touchedCounter, int& capacitiveValue, int& capacitiveReference) :
-command('r'),
-isNewCommand(false),
-touchedCounter(touchedCounter),
-capacitiveValue(capacitiveValue),
-capacitiveReference(capacitiveReference)
+I2CLedControl::I2CLedControl()
 {
     if (!instance) {
         instance = this;
     }
-    buffer[0] = 121;
-    buffer[1] = 121;
-    buffer[2] = 121;
 }
 
 
@@ -25,13 +18,10 @@ void I2CLedControl::setup() {
     Wire.onRequest(requestEventWrapper);
 }
 
-// first byte is how many 8ms increments the capacitive sensor has been touched
-// next two bytes are the capacitive value, int
-
 void I2CLedControl::onRequest() const {
-    Wire.write(touchedCounter);
-    writeInt(capacitiveValue);
-    writeInt(capacitiveReference);
+    for (uint16_t i = 0; i < sizeof (Context); i++) {
+        Wire.write(((byte*)&context)[i]);
+    }
 }
 
 void I2CLedControl::onReceive(int bytesReceived) {

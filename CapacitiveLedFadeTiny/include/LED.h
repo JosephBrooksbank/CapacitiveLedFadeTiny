@@ -16,10 +16,12 @@ public:
     void turnOff();
     // set all leds to a color
     void setColor(const CRGB &color);
+    CRGB getRGB();
+
 private:
     void updateBrightness();
     CRGB *leds;
-    volatile uint8_t holdTime = 0;
+    volatile uint16_t holdTime = 0;
     uint8_t numLeds;
 };
 

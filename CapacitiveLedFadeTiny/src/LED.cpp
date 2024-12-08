@@ -31,6 +31,10 @@ void LED::turnOff() {
     context.led_state = FADE_OFF;
 }
 
+CRGB LED::getRGB() {
+    return leds[0];
+}
+
 void LED::updateBrightness() {
     uint8_t brightness = FastLED.getBrightness();
     switch (context.led_state) {
@@ -49,7 +53,7 @@ void LED::updateBrightness() {
         case FADE_OFF: {
             // hold time is decremented by the tick function
             if (holdTime > 0) {
-                break;
+                return;
             }
             if (brightness - context.led_fadeOffSpeed < 0) {
                 brightness = 0;

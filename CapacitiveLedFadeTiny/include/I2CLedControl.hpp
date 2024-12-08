@@ -8,7 +8,7 @@
 
 class I2CLedControl {
 public:
-    explicit I2CLedControl(volatile int8_t & touchedValue, int & capacitiveValue, int& capacitiveReference);
+    explicit I2CLedControl();
     void setup();
     void onReceive(int bytesReceived);
     void onRequest() const;
@@ -20,9 +20,6 @@ public:
 private:
     uint8_t messageLength = 0;
     byte buffer[BUFFER_SIZE]{};
-    volatile int8_t & touchedCounter;
-    int & capacitiveValue;
-    int & capacitiveReference;
     static I2CLedControl *instance;
 protected:
     static void receiveEventWrapper(int bytesReceived);
