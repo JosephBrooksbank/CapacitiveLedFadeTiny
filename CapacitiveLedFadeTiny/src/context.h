@@ -1,6 +1,17 @@
 #ifndef CONTEXT_H
 #define CONTEXT_H
 #include "Arduino.h"
+#include "config.h"
+#include "NeighborRule.h"
+#include "AddressMap.h"
+
+enum Mode {
+    NORMAL,
+    RIPPLE,
+    ON,
+    CONFIG,
+    UNKNOWN,
+};
 
 enum LEDState {
     OFF,
@@ -17,6 +28,7 @@ enum Animation {
 
 #pragma pack(push, 1) // Force 1-byte alignment so we can send the struct over I2C
 struct Context {
+    Mode mode;
     uint8_t led_fadeOnSpeed;
     uint8_t led_fadeOffSpeed;
     uint16_t led_holdTime;
@@ -27,6 +39,8 @@ struct Context {
     int capacitive_value;
     bool shouldShow;
     Animation ledControl_animation;
+    AddressMap enabledModules;
+
 };
 #pragma pack(pop)
 

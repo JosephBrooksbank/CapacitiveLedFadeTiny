@@ -1,60 +1,33 @@
-#include "AddressMap.hpp"
-#include "config.h"
+#include "AddressMap.h"
 
-AddressMap::AddressMap(uint8_t address) : homePosition(findPosition(address)) {
-
+void AddressMap::clear() {
+    for (uint8_t i = 0; i < NumElements; i++) {
+        map[i] = 0;
+    }
 }
 
-AddressMap::AddressMap() : homePosition(findPosition(I2C_ADDRESS)) {
-
+bool AddressMap::IsAnyOn() {
+    for (uint8_t i = 0; i < NumElements; i++) {
+        if (map[i] != 0) {
+            return true;
+        }
+    }
+    return false;
 }
 
-
-Position AddressMap::findPosition(uint8_t address) {
-    for (int8_t row = 0; row < NUM_ROWS; row++) {
-        for (int8_t col = 0; col < NUM_COLS; col++) {
-            if (ADDRESS_MAP[row][col] == address) {
-                return Position{row, col};
-            }
-        }
+void AddressMap::set(uint8_t address, bool state) {
+    uint8_t element = address / BitsPerElement;
+    uint8_t bit = address % BitsPerElement;
+    if (state) {
+        map[element] |= 1 << bit;
+    } else {
+        map[element] &= ~(1 << bit);
     }
-    return Position{-1, -1};
 }
 
-Neighbors AddressMap::isNeighbor(uint8_t address) {
-    Position target = findPosition(address);
-    Neighbors neighbors {false, false, false, false, false, false, false, false};
-    if (target.row == -1) {
-        return neighbors;
-    }
-
-    if (homePosition.row == target.row) {
-        if (homePosition.col == target.col + 1) {
-            neighbors.right = true;
-        } else if (homePosition.col == target.col - 1) {
-            neighbors.left = true;
-        }
-    }
-    if (homePosition.col == target.col) {
-        if (homePosition.row == target.row + 1) {
-            neighbors.down = true;
-        } else if (homePosition.row == target.row - 1) {
-            neighbors.up = true;
-        }
-    }
-    if (homePosition.row == target.row + 1) {
-        if (homePosition.col == target.col + 1) {
-            neighbors.downRight = true;
-        } else if (homePosition.col == target.col - 1) {
-            neighbors.downLeft = true;
-        }
-    }
-    if (homePosition.row == target.row - 1) {
-        if (homePosition.col == target.col + 1) {
-            neighbors.upRight = true;
-        } else if (homePosition.col == target.col - 1) {
-            neighbors.upLeft = true;
-        }
-    }
-    return neighbors;
+bool AddressMap::get(uint8_t address) {
+    uint8_t element = address / BitsPerElement;
+    uint8_t bit = address % BitsPerElement;
+    return (map[element] >> bit) & 1;
 }
+
