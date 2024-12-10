@@ -7,6 +7,8 @@ public:
     explicit CommandReader(volatile byte* buffer) : buffer(buffer) {};
     void parseNewMessage();
 private:
+    void normalModeCommands();
+    void configModeCommands();
     volatile byte* buffer;
 };
 

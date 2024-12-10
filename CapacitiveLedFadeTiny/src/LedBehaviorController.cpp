@@ -77,6 +77,11 @@ void LedBehaviorController::animateColor() {
 
 void LedBehaviorController::step() {
         touchLeds();
+        if (context.enabledModules.IsAnyOn()) {
+            led->turnOn();
+        } else {
+            led->turnOff();
+        }
         animateColor();
         led->step();
 }

@@ -2,6 +2,9 @@
 #include "commands.h"
 
 void CommandReader::parseNewMessage() {
+}
+
+void CommandReader::normalModeCommands() {
     char command = buffer[0];
     switch (command) {
         case 'm':
@@ -16,5 +19,15 @@ void CommandReader::parseNewMessage() {
         default:
             break;
     }
+}
 
+void CommandReader::configModeCommands() {
+    char command = buffer[0];
+    switch (command) {
+        case 'm':
+            SetMode(buffer[1]);
+            break;
+        default:
+            break;
+    }
 }
