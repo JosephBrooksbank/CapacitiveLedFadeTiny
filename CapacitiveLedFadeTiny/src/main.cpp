@@ -5,12 +5,15 @@
 #include "Capacitive.h"
 #include "LedBehaviorController.h"
 #include "I2CLedControl.hpp"
+#include "context.h"
+#include "CommandReader.h"
 
 CRGB leds[NUM_LEDS];
 LED led(leds, NUM_LEDS);
 Capacitive capacitive(CAPACITIVE_PIN);
 LedBehaviorController ledBehaviorController(&led, &capacitive);
 I2CLedControl i2CLedControl;
+CommandReader commandReader(i2CLedControl.getBuffer());
 
 
 void setup() {
@@ -22,8 +25,25 @@ void setup() {
 }
 
 void loop() {
-    ledBehaviorController.step();
-    delay(1);
+    if (i2CLedControl.messageReceived) {
+        i2CLedControl.messageReceived = false;
+        commandReader.parseNewMessage();
+    }
+    switch (context.mode) {
+        case NORMAL:
+            ledBehaviorController.step();
+            break;
+        case RIPPLE:
+            break;
+        case ON:
+            led.turnOn();
+            led.step();
+            break;
+        case CONFIG:
+            break;
+        case UNKNOWN:
+            break;
+    }
 }
 
 

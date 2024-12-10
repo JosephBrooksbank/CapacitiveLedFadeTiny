@@ -32,10 +32,8 @@ void I2CLedControl::onReceive(int bytesReceived) {
         return;
     }
 
-    isNewCommand = true;
-    command = Wire.read();
-
-    for (auto i = 0; i < bytesReceived-1; i++) {
+    messageReceived = true;
+    for (auto i = 0; i < bytesReceived; i++) {
         buffer[i] = Wire.read();
     }
     messageLength = bytesReceived;

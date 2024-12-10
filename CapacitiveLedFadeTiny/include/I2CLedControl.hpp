@@ -9,13 +9,12 @@
 class I2CLedControl {
 public:
     explicit I2CLedControl();
-    void setup();
+    static void setup();
     void onReceive(int bytesReceived);
     void onRequest() const;
     static void writeInt(int value);
     byte* getBuffer();
-    char command;
-    bool isNewCommand;
+    bool messageReceived = false;
 
 private:
     uint8_t messageLength = 0;
