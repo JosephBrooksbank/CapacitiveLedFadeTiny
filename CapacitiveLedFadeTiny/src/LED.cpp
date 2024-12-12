@@ -31,6 +31,18 @@ void LED::turnOff() {
     context.led_state = FADE_OFF;
 }
 
+void LED::flashColor(const CRGB &color) {
+    CRGB currentColor = leds[0];
+    setColor(color);
+    uint8_t brightness = FastLED.getBrightness();
+    FastLED.setBrightness(255);
+    FastLED.show();
+    delay(300);
+    setColor(currentColor);
+    FastLED.setBrightness(brightness);
+    FastLED.show();
+}
+
 CRGB LED::getRGB() {
     return leds[0];
 }

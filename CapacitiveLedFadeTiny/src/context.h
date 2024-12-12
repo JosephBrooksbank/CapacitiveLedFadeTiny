@@ -3,6 +3,8 @@
 #include "Arduino.h"
 #include "config.h"
 #include "AddressMap.h"
+#include "TimingGroup.h"
+#include "LED.h"
 
 enum Mode {
     NORMAL,
@@ -39,7 +41,9 @@ struct Context {
     bool shouldShow;
     Animation ledControl_animation;
     AddressMap enabledModules;
-
+    TimingGroup timingGroups [1];
+    uint8_t timingGroupCount;
+    LED* led;
 };
 #pragma pack(pop)
 

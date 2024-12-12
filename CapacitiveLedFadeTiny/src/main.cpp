@@ -17,6 +17,7 @@ CommandReader commandReader(i2CLedControl.getBuffer());
 
 
 void setup() {
+    context.led = &led;
     FastLED.addLeds<WS2812, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
     timerSetup();
     i2CLedControl.setup();

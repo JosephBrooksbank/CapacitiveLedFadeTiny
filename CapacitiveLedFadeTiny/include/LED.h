@@ -14,6 +14,7 @@ public:
     void tick();
     void turnOn();
     void turnOff();
+    void flashColor(const CRGB &color);
     // set all leds to a color
     void setColor(const CRGB &color);
     CRGB getRGB();

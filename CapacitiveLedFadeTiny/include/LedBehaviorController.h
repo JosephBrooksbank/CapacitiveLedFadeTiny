@@ -12,7 +12,7 @@ public:
 
 private:
     void animateColor();
-    void touchLeds();
+    bool shouldTurnOnFromTouch();
     void colorSpin();
     void setColorBasedOnCapacitiveValue();
     void changeToNextRainbowTarget();

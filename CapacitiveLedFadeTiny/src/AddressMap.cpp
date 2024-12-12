@@ -6,7 +6,7 @@ void AddressMap::clear() {
     }
 }
 
-bool AddressMap::IsAnyOn() {
+bool AddressMap::IsAnySet() {
     for (uint8_t i = 0; i < NumElements; i++) {
         if (map[i] != 0) {
             return true;
@@ -31,3 +31,20 @@ bool AddressMap::get(uint8_t address) {
     return (map[element] >> bit) & 1;
 }
 
+
+AddressMap AddressMap::clone() {
+    AddressMap newMap;
+    for (uint8_t i = 0; i < NumElements; i++) {
+        newMap.map[i] = map[i];
+    }
+    return newMap;
+}
+
+bool AddressMap::hasMatch(AddressMap &other) {
+    for (uint8_t i = 0; i < NumElements; i++) {
+        if (map[i] & other.map[i]) {
+            return true;
+        }
+    }
+    return false;
+}

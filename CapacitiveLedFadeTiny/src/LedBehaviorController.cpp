@@ -1,12 +1,8 @@
 #include "LedBehaviorController.h"
 #include "context.h"
 
-void LedBehaviorController::touchLeds() {
-    if (capacitive->isTouched()) {
-        led->turnOn();
-    } else {
-        led->turnOff();
-    }
+bool LedBehaviorController::shouldTurnOnFromTouch() {
+    return capacitive->isTouched();
 }
 
 void LedBehaviorController::setColorBasedOnCapacitiveValue() {
@@ -76,16 +72,26 @@ void LedBehaviorController::animateColor() {
 }
 
 void LedBehaviorController::step() {
-        touchLeds();
-        if (context.enabledModules.IsAnyOn()) {
-            led->turnOn();
-        } else {
-            led->turnOff();
+    bool shouldTurnOn = shouldTurnOnFromTouch();
+    for (uint8_t i = 0; i < context.timingGroupCount; i++) {
+        if (context.timingGroups[i].isEnabled()) {
+            shouldTurnOn = true;
+            break;
         }
-        animateColor();
-        led->step();
+    }
+    if (shouldTurnOn) {
+        led->turnOn();
+    } else {
+        led->turnOff();
+    }
+    animateColor();
+    led->step();
 }
 
 void LedBehaviorController::tick() {
+    for (uint8_t i = 0; i < context.timingGroupCount; i++) {
+        context.timingGroups[i].tick();
+    }
+//    context.timingGroup.tick();
     animate = true;
 }

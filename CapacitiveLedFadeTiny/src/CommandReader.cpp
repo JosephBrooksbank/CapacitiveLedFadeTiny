@@ -1,10 +1,27 @@
 #include "CommandReader.h"
 #include "commands.h"
+#include "config.h"
 
 void CommandReader::parseNewMessage() {
+    switch (context.mode) {
+        case RIPPLE:
+        case ON:
+        case UNKNOWN:
+        case NORMAL:
+            normalModeCommands();
+            break;
+        case CONFIG:
+            configModeCommands();
+            break;
+        default:
+            break;
+    }
 }
 
 void CommandReader::normalModeCommands() {
+    if (DEBUG_LIGHTS) {
+        context.led->flashColor(CRGB::Red);
+    }
     char command = buffer[0];
     switch (command) {
         case 'm':

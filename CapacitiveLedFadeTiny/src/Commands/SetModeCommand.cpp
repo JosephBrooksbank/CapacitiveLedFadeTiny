@@ -9,6 +9,9 @@ void SetMode(byte mode) {
             context.mode = RIPPLE;
             break;
         case Mode::ON:
+            if (DEBUG_LIGHTS) {
+                context.led->flashColor(CRGB::Green);
+            }
             context.mode = ON;
             break;
         case Mode::CONFIG:

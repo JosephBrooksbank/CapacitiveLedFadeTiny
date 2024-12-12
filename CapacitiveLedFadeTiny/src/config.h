@@ -2,7 +2,7 @@
 #define CONFIG_H
 
 // How sensitive the capacitive sensor is. Lower = more sensitive.
-#define CAPACITIVE_SENSITIVITY 3
+#define DEBUG_LIGHTS true
 #define CAPACITIVE_PIN 3
 const int LED_PIN = 1;
 #define I2C_ADDRESS 5
@@ -29,5 +29,6 @@ const uint8_t ADDRESS_MAP[NUM_ROWS][NUM_COLS] = {
 // Max without: 52+
 #define NUM_LEDS 30
 #define COLOR_ORDER GRB
+
 
 #endif
