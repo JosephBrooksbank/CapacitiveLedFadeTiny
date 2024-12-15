@@ -1,8 +1,8 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-// How sensitive the capacitive sensor is. Lower = more sensitive.
 #define DEBUG_LIGHTS true
+#define MAX_TIMING_GROUPS 2
 #define CAPACITIVE_PIN 3
 const int LED_PIN = 1;
 #define I2C_ADDRESS 5

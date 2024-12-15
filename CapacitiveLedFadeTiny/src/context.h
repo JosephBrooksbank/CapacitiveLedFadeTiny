@@ -38,10 +38,9 @@ struct Context {
     uint8_t capacitive_debounce;
     volatile uint32_t capacitive_msTouched;
     int capacitive_value;
-    bool shouldShow;
     Animation ledControl_animation;
     AddressMap enabledModules;
-    TimingGroup timingGroups [1];
+    TimingGroup timingGroups [MAX_TIMING_GROUPS];
     uint8_t timingGroupCount;
     LED* led;
 };
