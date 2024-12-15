@@ -4,13 +4,14 @@
 #include "config.h"
 
 
-static constexpr uint8_t BitsPerElement = 32;
+static constexpr uint8_t BitsPerElement = 8;
 static constexpr uint8_t NumElements = (NUM_MODULES + BitsPerElement - 1) / BitsPerElement;
 class AddressMap {
 private:
-    uint32_t map[NumElements]{0};
+    uint8_t map[NumElements]{0};
 
 public:
+    AddressMap() = default;
     void set(uint8_t address, bool state);
 
     bool get(uint8_t address);
@@ -20,6 +21,7 @@ public:
     void clear();
     bool IsAnySet();
     AddressMap clone();
+    static AddressMap fromBuffer(volatile byte *bytes, uint8_t startingIndex);
 
 };
 

@@ -48,3 +48,12 @@ bool AddressMap::hasMatch(AddressMap &other) {
     }
     return false;
 }
+
+AddressMap AddressMap::fromBuffer(volatile byte *bytes, uint8_t startingIndex) {
+    AddressMap newMap;
+    uint8_t index = 0;
+    for (uint8_t i = startingIndex; i < NumElements; i++) {
+        newMap.map[index++] = bytes[i];
+    }
+    return newMap;
+}
