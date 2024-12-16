@@ -7,6 +7,7 @@
 #include "I2CLedControl.hpp"
 #include "context.h"
 #include "CommandReader.h"
+#include "EEPROM.h"
 
 CRGB leds[NUM_LEDS];
 LED led(leds, NUM_LEDS);
@@ -23,6 +24,16 @@ void setup() {
     i2CLedControl.setup();
     capacitive.init();
     led.init();
+    uint8_t value ;
+    EEPROM.get(0, value);
+
+//    EEPROM.put(0, 17);
+    if (value == 17) {
+        led.flashColor(CRGB::Green);
+    } else {
+        led.flashColor(CRGB::Red);
+    }
+
 }
 
 void loop() {
