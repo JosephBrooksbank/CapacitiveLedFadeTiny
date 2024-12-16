@@ -44,6 +44,13 @@ void CommandReader::configModeCommands() {
         case 'm':
             SetMode(buffer[1]);
             break;
+        case 'g': {
+            uint8_t groupIndex = buffer[1];
+            uint16_t delay = buffer[2] << 8 | buffer[3];
+            AddressMap addresses =AddressMap::fromBuffer(buffer, 4);
+            SetTimingGroup(0, addresses, 100);
+            break;
+        }
         default:
             break;
     }

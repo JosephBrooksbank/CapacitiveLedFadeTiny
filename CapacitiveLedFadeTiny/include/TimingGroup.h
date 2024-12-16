@@ -6,7 +6,7 @@
 class TimingGroup {
 public:
     TimingGroup() : addresses(AddressMap()), delay(0) {};
-    TimingGroup(AddressMap &addresses, uint16_t delay) : addresses(addresses.clone()), delay(delay) {};
+    TimingGroup(AddressMap&& addresses, uint16_t delay) : addresses(addresses), delay(delay) {};
     TimingGroup(uint8_t address, uint16_t delay) : addresses(AddressMap()), delay(delay) {
         addresses.set(address, true);
     };
