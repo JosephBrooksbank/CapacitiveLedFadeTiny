@@ -12,6 +12,6 @@ void ToggleModule(uint8_t moduleAddress);
 // u: untoggle another device
 void UnToggleModule(uint8_t moduleAddress);
 // g: set timing group
-void SetTimingGroup(uint8_t groupIndex, AddressMap&& addresses, uint16_t delay);
+void SetTimingGroup(volatile byte* buffer, uint8_t index);
 
 #endif

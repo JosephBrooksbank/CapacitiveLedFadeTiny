@@ -20,7 +20,7 @@ void CommandReader::parseNewMessage() {
 
 void CommandReader::normalModeCommands() {
     if (DEBUG_LIGHTS) {
-        context.led->flashColor(CRGB::Red);
+        context.led->flashColor(CRGB::Green);
     }
     char command = buffer[0];
     switch (command) {
@@ -45,10 +45,7 @@ void CommandReader::configModeCommands() {
             SetMode(buffer[1]);
             break;
         case 'g': {
-            uint8_t groupIndex = buffer[1];
-            uint16_t delay = buffer[2] << 8 | buffer[3];
-            AddressMap addresses =AddressMap::fromBuffer(buffer, 4);
-            SetTimingGroup(0, addresses, 100);
+            SetTimingGroup(buffer, 1);
             break;
         }
         default:

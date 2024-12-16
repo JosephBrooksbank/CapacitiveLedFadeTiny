@@ -10,10 +10,10 @@ const int LED_PIN = 1;
 // if needed in the future - can poll groups rather than individual addresses.
 #define GROUP (I2C_ADDRESS % NUM_GROUPS)
 
-#define NUM_MODULES 30
+#define NUM_MODULES 50
 
 
-#define BUFFER_SIZE 10
+#define BUFFER_SIZE 20
 
 // physical layout of the table, approximated
 #define NUM_ROWS 2
