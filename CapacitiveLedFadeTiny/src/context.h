@@ -6,7 +6,7 @@
 #include "TimingGroup.h"
 #include "LED.h"
 
-enum Mode {
+enum class Mode : uint8_t {
     NORMAL,
     RIPPLE,
     ON,
@@ -14,14 +14,14 @@ enum Mode {
     UNKNOWN,
 };
 
-enum LEDState {
+enum class LEDState : uint8_t {
     OFF,
     FADE_ON,
     HOLD,
     FADE_OFF
 };
 
-enum Animation {
+enum class Animation : uint8_t {
     NONE,
     VALUE_INDICATE,
     RAINBOW
@@ -29,19 +29,9 @@ enum Animation {
 
 #pragma pack(push, 1) // Force 1-byte alignment so we can send the struct over I2C
 struct Context {
-    Mode mode;
-    uint8_t led_fadeOnSpeed;
-    uint8_t led_fadeOffSpeed;
-    uint16_t led_holdTime;
-    LEDState led_state;
-    uint8_t capacitive_sensitivity;
-    uint8_t capacitive_debounce;
     volatile uint32_t capacitive_msTouched;
     int capacitive_value;
-    Animation ledControl_animation;
     AddressMap enabledModules;
-    TimingGroup timingGroups [MAX_TIMING_GROUPS];
-    uint8_t timingGroupCount;
     LED* led;
 };
 #pragma pack(pop)
