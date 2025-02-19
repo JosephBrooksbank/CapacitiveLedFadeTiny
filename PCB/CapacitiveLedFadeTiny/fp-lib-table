@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "CapacitiveLedFadeLibrary")(type "KiCad")(uri "${KIPRJMOD}/CapacitiveLedFadeLibrary.pretty")(options "")(descr ""))
+)
