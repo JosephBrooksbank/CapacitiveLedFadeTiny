@@ -1210,7 +1210,7 @@
     (property "Value" "Antenna" (at 208.915 72.39 0)
       (effects (font (size 1.27 1.27)))
     )
-    (property "Footprint" "CapacitiveLedFadeLibrary:CapacitiveAntenna" (at 207.645 74.93 0)
+    (property "Footprint" "TestPoint:TestPoint_Pad_1.0x1.0mm" (at 207.645 74.93 0)
       (effects (font (size 1.27 1.27)) hide)
     )
     (property "Datasheet" "~" (at 207.645 74.93 0)
