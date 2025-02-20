@@ -55,7 +55,11 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        "lib_footprint_mismatch|140275000|92456000|d79703ed-1a32-4bc4-b908-41c344f16d7c|00000000-0000-0000-0000-000000000000",
+        "lib_footprint_mismatch|145272700|96520000|7fee5c33-4f40-45c2-8923-fc3844b1818c|00000000-0000-0000-0000-000000000000",
+        "text_height|126161800|112522000|f921e5d4-b306-4e3b-b2a4-33652d136526|00000000-0000-0000-0000-000000000000"
+      ],
       "meta": {
         "version": 2
       },
@@ -462,6 +466,10 @@
       {
         "netclass": "Power",
         "pattern": "GND"
+      },
+      {
+        "netclass": "Power",
+        "pattern": "VCC"
       }
     ]
   },
