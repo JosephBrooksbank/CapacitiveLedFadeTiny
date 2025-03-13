@@ -1,76 +1,75 @@
-#include <Arduino.h>
-#include <config.h>
-#include "LED.h"
-#include "main.h"
-#include "Capacitive.h"
-#include "LedBehaviorController.h"
-#include "I2CLedControl.hpp"
-#include "context.h"
-#include "CommandReader.h"
-#include "EEPROM.h"
+#include "FastLED.h"
+#include "adcTouch.h"
+#include "Wire.h"
+#include "status_led.h"
+#include "config.h"
+#include "millis_fix.h"
 
+
+
+void receiveDataWire(int numBytes);
+volatile byte i2c_buffer[30];
+volatile uint16_t i2c_length = 0;
+int referenceCap = 0;
+bool lightOn = false;
 CRGB leds[NUM_LEDS];
-LED led(leds, NUM_LEDS);
-Capacitive capacitive(CAPACITIVE_PIN);
-LedBehaviorController ledBehaviorController(&led, &capacitive);
-I2CLedControl i2CLedControl;
-CommandReader commandReader(i2CLedControl.getBuffer());
+uint16_t cycles_since_last_touched = 0;
 
+void setup_i2c() {
+    Wire.begin(I2C_ADDRESS);
+    Wire.onReceive(receiveDataWire);
+
+}
+
+void setup_leds() {
+    FastLED.addLeds<LED_DRIVER, LED_PIN, GRB>(leds, NUM_LEDS);
+}
 
 void setup() {
-    context.led = &led;
-    FastLED.addLeds<WS2812, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
-    timerSetup();
-    i2CLedControl.setup();
-    capacitive.init();
-    led.init();
-    uint8_t value ;
-    EEPROM.get(0, value);
+    Serial.begin(BAUD_RATE);
+    setup_i2c();
+    setup_leds();
+    setup_status_led();
+    FastLED.setBrightness(50);
+    #ifdef USE_ONBOARD_LED
+        pinMode(ENABLE_DEBUG_LED_PIN, OUTPUT); 
+        digitalWrite(ENABLE_DEBUG_LED_PIN, true);
+    #endif
 
-//    EEPROM.put(0, 17);
-    if (value == 17) {
-        led.flashColor(CRGB::Green);
-    } else {
-        led.flashColor(CRGB::Red);
-    }
-
+    referenceCap = read(SENSE_PIN, 64);
+    set_status_led(CRGB::Red);
 }
 
+
+int reading = 0;
 void loop() {
-    if (i2CLedControl.messageReceived) {
-        i2CLedControl.messageReceived = false;
-        commandReader.parseNewMessage();
+    Serial.println("looping");
+    reading = read(SENSE_PIN, 64) - referenceCap;
+
+    if (reading >= TOUCH_SENSE) {
+        cycles_since_last_touched = 0;
+    } else {
+        if (cycles_since_last_touched < OFF_DELAY) {
+            cycles_since_last_touched++;
+        }
     }
-    switch (context.mode) {
-        case NORMAL:
-            ledBehaviorController.step();
-            break;
-        case RIPPLE:
-            break;
-        case ON:
-            led.turnOn();
-            led.step();
-            break;
-        case CONFIG:
-            break;
-        case UNKNOWN:
-            break;
+
+    if (cycles_since_last_touched < OFF_DELAY && !lightOn) {
+        lightOn = true;
+        CRGB randomColor = CHSV(random(192), 255, 255);
+        fill_solid(leds, NUM_LEDS, randomColor);
+        FastLED.show();
+    } else if (cycles_since_last_touched >= OFF_DELAY && lightOn) {
+        lightOn = false;
+        leds[0] = CRGB::Black;
+        FastLED.show();
     }
 }
 
 
-void timerSetup() {
-    TCCR1 = 0; // reset timer1 config
-    GTCCR |= (1 << PSR1); // reset prescaler
-    TCCR1 = (1 << CTC1) | (1 << CS12) | (1 << CS11); // CTC mode, prescaler = 64
-    OCR1C = 124; // Compare value for 1ms
-    TIMSK |= (1 << OCIE1A); // enable interrupt
-
-    sei(); // enable global interrupts
-}
-
-ISR(TIMER1_COMPA_vect) {
-    capacitive.tick();
-    ledBehaviorController.tick();
-    led.tick();
+void receiveDataWire(int numBytes) {
+    for (uint8_t i = 0; i < numBytes; i++) {
+        i2c_buffer[i] = Wire.read();
+    }
+    i2c_length = numBytes;
 }
