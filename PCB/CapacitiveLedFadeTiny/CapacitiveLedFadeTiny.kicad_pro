@@ -479,8 +479,8 @@
       "idf": "",
       "netlist": "",
       "specctra_dsn": "",
-      "step": "",
-      "vrml": ""
+      "step": "CapacitiveLedFadeTiny_holes.step",
+      "vrml": "CapacitiveLedFadeTiny.wrl"
     },
     "page_layout_descr_file": ""
   },
