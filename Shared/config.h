@@ -3,9 +3,27 @@
 
 #include "Arduino.h"
 
-#define TOUCH_SENSE 5
-#define OFF_DELAY 200
 
+#define CONFIG_EEPROM_ADDRESS 0
+struct Config {
+    uint8_t version;
+    uint8_t touch_sense;
+    uint8_t off_delay;
+    uint8_t max_brightness;
+}; 
+
+///// RUNTIME CONFIG (set in EEPROM)
+#define CONFIG_VERSION 1
+#define DEFAULT_TOUCH_SENSE 5
+#define DEFAULT_OFF_DELAY 200
+#define DEFAULT_MAX_BRIGHTNESS 10
+
+Config get_config();
+void set_config(Config &conf);
+Config setup_config();
+
+
+///// CONST CONFIG (no change at runtime)
 #define BAUD_RATE 115200
 #define NUM_LEDS 30
 #define ENABLE_DEBUG_LED_PIN PIN_PA7
@@ -13,8 +31,6 @@
 #define SENSE_PIN PIN_PA6
 #define LED_DRIVER WS2812
 #define LED_PIN PIN_PA5
-
-
 // i2c stuff
 #define USE_I2C
 #define I2C_ADDRESS 14

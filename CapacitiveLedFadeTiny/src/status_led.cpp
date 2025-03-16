@@ -15,7 +15,6 @@ void setup_status_led() {
 void set_status_led(const CRGB color) {
     #ifdef USE_STATUS_LED
         STATUS_LED = color;
-        FastLED.show();
     #endif
 
 }
