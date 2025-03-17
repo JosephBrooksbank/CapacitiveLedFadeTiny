@@ -6,7 +6,9 @@ Config testConfig = {
     .version = 1,
     .touch_sense = DEFAULT_TOUCH_SENSE,
     .off_delay = DEFAULT_OFF_DELAY,
-    .max_brightness = 50
+    .max_brightness = 50,
+    .color_mode = ColorMode::Random,
+    .single_color_color = CRGB::Blue
 };
 
 void setup() {

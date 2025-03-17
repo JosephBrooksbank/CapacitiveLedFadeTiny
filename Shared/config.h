@@ -2,21 +2,31 @@
 #define CONFIG_H
 
 #include "Arduino.h"
+#include "FastLED.h"
 
 
 #define CONFIG_EEPROM_ADDRESS 0
+enum ColorMode {
+    Single,
+    Random
+};
+
 struct Config {
     uint8_t version;
     uint8_t touch_sense;
     uint8_t off_delay;
     uint8_t max_brightness;
+    ColorMode color_mode;
+    CRGB single_color_color;
 }; 
 
 ///// RUNTIME CONFIG (set in EEPROM)
-#define CONFIG_VERSION 1
+#define CONFIG_VERSION 2
 #define DEFAULT_TOUCH_SENSE 5
 #define DEFAULT_OFF_DELAY 200
 #define DEFAULT_MAX_BRIGHTNESS 10
+#define DEFAULT_COLOR_MODE Random
+#define DEFAULT_SINGLE_COLOR CRGB::White
 
 Config get_config();
 void set_config(Config &conf);

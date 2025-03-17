@@ -49,8 +49,12 @@ void handleNewMessage() {
 }
 
 CRGB get_color_for_lights() {
-
-    return CHSV(random(192), 255, 255);
+    switch (config.color_mode) {
+        case ColorMode::Random: 
+            return CHSV(random(192), 255, 255);
+        case ColorMode::Single:
+            return config.single_color_color;
+    }
 }
 
 void turn_on() {
