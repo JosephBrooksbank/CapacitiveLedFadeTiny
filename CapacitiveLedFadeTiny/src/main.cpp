@@ -14,22 +14,30 @@ volatile byte input_buffer[sizeof(Config)+1];
 volatile uint8_t input_length = 0;
 volatile bool new_message = false;
 volatile bool is_update_frame = false;
+volatile uint8_t timer_overflows = 0;
+const uint8_t goal_overflows = 5;
 int referenceCap = 0;
 bool lightOn = false;
 CRGB leds[NUM_LEDS];
 uint16_t cycles_since_last_touched = 0;
 Config config;
+uint8_t brightness = 0;
 
-const uint16_t timer_count = F_CPU / 60;
+const uint16_t timer_count = F_CPU / 2;
 void setup_animation_timer() {
-    TCB0_CCMP = timer_count;
-    TCB0_CTRLA = TCB_CLKSEL_DIV1_gc | TCB_ENABLE_bm;
+    TCB0_CCMP = 65535;
+    TCB0_CTRLA = TCB_CLKSEL_CLKDIV2_gc | TCB_ENABLE_bm;
     TCB0_INTCTRL = TCB_CAPT_bm;
     TCB0_CTRLB = TCB_CNTMODE_INT_gc;
 }
 
 ISR(TCB0_INT_vect) {
-    is_update_frame = true;
+    if (timer_overflows < goal_overflows) {
+        timer_overflows++;
+    } else {
+        timer_overflows = 0;
+        is_update_frame = true;
+    }
     TCB0_INTFLAGS = TCB_CAPT_bm;
 }
 
@@ -73,7 +81,7 @@ CRGB get_color_for_lights() {
 
 void turn_on() {
         lightOn = true;
-        FastLED.setBrightness(config.max_brightness);
+        brightness = config.max_brightness;
         CRGB color = get_color_for_lights();
         fill_solid(leds, NUM_LEDS, color);
 }
@@ -83,9 +91,8 @@ void turn_off() {
 }
 
 void fade_off() {
-    uint8_t current_brightness = FastLED.getBrightness();
-    if (current_brightness > 0) {
-        FastLED.setBrightness(current_brightness - 1);
+    if (brightness > 0) {
+        brightness--;
     } 
 }
 
@@ -121,6 +128,7 @@ void setup() {
     #ifdef USE_I2C
         setup_i2c();
     #endif
+    setup_animation_timer();
     #ifdef USE_SOFTWARE_SERIAL
         pinMode(RX_PIN, INPUT);
         pinMode(TX_PIN, OUTPUT);
@@ -163,7 +171,10 @@ void loop() {
         animate();
         is_update_frame = false;
     }
-    FastLED.show();
+    FastLED[0].showLeds(brightness);
+    #ifdef USE_STATUS_LED
+        FastLED[1].showLeds(config.max_brightness);
+    #endif
 }
 
 
