@@ -13,11 +13,25 @@ void receiveDataSoftSerial();
 volatile byte input_buffer[sizeof(Config)+1];
 volatile uint8_t input_length = 0;
 volatile bool new_message = false;
+volatile bool is_update_frame = false;
 int referenceCap = 0;
 bool lightOn = false;
 CRGB leds[NUM_LEDS];
 uint16_t cycles_since_last_touched = 0;
 Config config;
+
+const uint16_t timer_count = F_CPU / 60;
+void setup_animation_timer() {
+    TCB0_CCMP = timer_count;
+    TCB0_CTRLA = TCB_CLKSEL_DIV1_gc | TCB_ENABLE_bm;
+    TCB0_INTCTRL = TCB_CAPT_bm;
+    TCB0_CTRLB = TCB_CNTMODE_INT_gc;
+}
+
+ISR(TCB0_INT_vect) {
+    is_update_frame = true;
+    TCB0_INTFLAGS = TCB_CAPT_bm;
+}
 
 void setup_i2c() {
     Wire.begin(I2C_ADDRESS, true);
@@ -59,13 +73,26 @@ CRGB get_color_for_lights() {
 
 void turn_on() {
         lightOn = true;
+        FastLED.setBrightness(config.max_brightness);
         CRGB color = get_color_for_lights();
         fill_solid(leds, NUM_LEDS, color);
 }
 
 void turn_off() {
         lightOn = false;
-        fill_solid(leds, NUM_LEDS, CRGB::Black);
+}
+
+void fade_off() {
+    uint8_t current_brightness = FastLED.getBrightness();
+    if (current_brightness > 0) {
+        FastLED.setBrightness(current_brightness - 1);
+    } 
+}
+
+void animate() {
+    if (!lightOn) {
+        fade_off();
+    }
 }
 
 int reading = 0;
@@ -130,6 +157,11 @@ void loop() {
         turn_on();
     } else if (should_turn_off()) {
         turn_off();
+    }
+
+    if (is_update_frame) {
+        animate();
+        is_update_frame = false;
     }
     FastLED.show();
 }

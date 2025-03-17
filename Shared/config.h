@@ -18,8 +18,10 @@ struct Config {
     uint8_t max_brightness;
     ColorMode color_mode;
     CRGB single_color_color;
+    uint8_t fade_amount;
 }; 
 
+#define RESET_CONFIG true
 ///// RUNTIME CONFIG (set in EEPROM)
 #define CONFIG_VERSION 2
 #define DEFAULT_TOUCH_SENSE 5
@@ -27,6 +29,7 @@ struct Config {
 #define DEFAULT_MAX_BRIGHTNESS 10
 #define DEFAULT_COLOR_MODE Random
 #define DEFAULT_SINGLE_COLOR CRGB::White
+#define DEFAULT_FADE_AMOUNT 1
 
 Config get_config();
 void set_config(Config &conf);
