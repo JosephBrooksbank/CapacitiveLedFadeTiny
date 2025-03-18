@@ -9,7 +9,8 @@ Config DefaultConfig = {
     .max_brightness = DEFAULT_MAX_BRIGHTNESS,
     .color_mode = DEFAULT_COLOR_MODE,
     .single_color_color = DEFAULT_SINGLE_COLOR,
-    .fade_amount = DEFAULT_FADE_AMOUNT
+    .fade_amount = DEFAULT_FADE_AMOUNT,
+    .hue = DEFAULT_HUE
 };
 
 Config get_config() {

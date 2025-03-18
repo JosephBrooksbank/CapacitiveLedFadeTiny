@@ -22,6 +22,7 @@ CRGB leds[NUM_LEDS];
 uint16_t cycles_since_last_touched = 0;
 Config config;
 uint8_t brightness = 0;
+uint8_t hue = 100;
 
 const uint16_t timer_count = F_CPU / 2;
 void setup_animation_timer() {
@@ -58,6 +59,7 @@ void setup_leds() {
 
 void applyConfig() {
     FastLED.setBrightness(config.max_brightness);
+    hue = config.hue;
 }
 
 void handleNewMessage() {
@@ -76,6 +78,8 @@ CRGB get_color_for_lights() {
             return CHSV(random(192), 255, 255);
         case ColorMode::Single:
             return config.single_color_color;
+        case ColorMode::Rainbow:
+            return CHSV(hue, 255, 255);
     }
 }
 
@@ -97,6 +101,11 @@ void fade_off() {
 }
 
 void animate() {
+    if (config.color_mode == ColorMode::Rainbow) {
+        hue++;
+        CRGB color = CHSV(hue, 255, 255);
+        fill_solid(leds, NUM_LEDS, color);
+    }
     if (!lightOn) {
         fade_off();
     }
