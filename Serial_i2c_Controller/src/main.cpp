@@ -3,12 +3,14 @@
 #include "config.h"
 
 Config testConfig = {
-    .version = 1,
+    .should_store = false,
     .touch_sense = DEFAULT_TOUCH_SENSE,
     .off_delay = DEFAULT_OFF_DELAY,
     .max_brightness = 100,
-    .color_mode = ColorMode::Random,
-    .single_color_color = CRGB::Blue
+    .color_mode = ColorMode::Rainbow,
+    .single_color_color = CRGB::Blue,
+    .fade_amount = DEFAULT_FADE_AMOUNT,
+    .hue = DEFAULT_HUE
 };
 
 void set_scl_min() {
@@ -28,7 +30,7 @@ void set_scl_max() {
 
 void setup() {
     Wire.begin();
-    set_scl_max();
+    set_scl_min();
 
     Wire.beginTransmission(0);
     Wire.write((byte*)&testConfig, sizeof(Config));
@@ -36,11 +38,17 @@ void setup() {
 }
 
 
+void rainbow_sync() {
+    // this ratio was accidental but ended up being essentially flawless for keeping in sync even with
+    // i2c messages getting in the way. Keeping ite, even if the original math was flawed
+    delay(600);
+    testConfig.hue+=100;
+    Wire.beginTransmission(0);
+    Wire.write((byte*)&testConfig, sizeof(Config));
+    Wire.endTransmission();
+}
+
 
 void loop() {
-
-    // Wire.beginTransmission(0);
-    // Wire.write('a');
-    // Wire.endTransmission();
-    delay(2000);
+    rainbow_sync();
 }

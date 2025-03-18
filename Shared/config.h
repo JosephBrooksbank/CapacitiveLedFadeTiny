@@ -14,7 +14,7 @@ enum ColorMode {
 
 struct Config {
     // which version of the config is stored in eeprom, for updating defaults
-    uint8_t version;
+    bool should_store;
     // how large a value needs to be detected before registering as 'touch'
     uint8_t touch_sense;
     // how many ticks without a touch before registering as not a 'touch' (smooth the output, and add a delay off)
@@ -33,7 +33,7 @@ struct Config {
 
 #define RESET_CONFIG true
 ///// RUNTIME CONFIG (set in EEPROM)
-#define CONFIG_VERSION 2
+#define DEFAULT_SHOULD_STORE false
 #define DEFAULT_TOUCH_SENSE 5
 #define DEFAULT_OFF_DELAY 200
 #define DEFAULT_MAX_BRIGHTNESS 10

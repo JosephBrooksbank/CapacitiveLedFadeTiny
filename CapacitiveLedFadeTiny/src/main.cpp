@@ -15,7 +15,7 @@ volatile uint8_t input_length = 0;
 volatile bool new_message = false;
 volatile bool is_update_frame = false;
 volatile uint8_t timer_overflows = 0;
-const uint8_t goal_overflows = 5;
+const uint8_t goal_overflows = 2;
 int referenceCap = 0;
 bool lightOn = false;
 CRGB leds[NUM_LEDS];
@@ -24,9 +24,9 @@ Config config;
 uint8_t brightness = 0;
 uint8_t hue = 100;
 
-const uint16_t timer_count = F_CPU / 2;
 void setup_animation_timer() {
-    TCB0_CCMP = 65535;
+    // magic number from actually monitoring the ISR to get ~60hz animation time
+    TCB0_CCMP = 41524;
     TCB0_CTRLA = TCB_CLKSEL_CLKDIV2_gc | TCB_ENABLE_bm;
     TCB0_INTCTRL = TCB_CAPT_bm;
     TCB0_CTRLB = TCB_CNTMODE_INT_gc;
@@ -35,7 +35,8 @@ void setup_animation_timer() {
 ISR(TCB0_INT_vect) {
     if (timer_overflows < goal_overflows) {
         timer_overflows++;
-    } else {
+    } 
+    if (timer_overflows >= goal_overflows) {
         timer_overflows = 0;
         is_update_frame = true;
     }
@@ -64,11 +65,12 @@ void applyConfig() {
 
 void handleNewMessage() {
         new_message = false;
-        Serial.printf("Received message of length %d\n", input_length);
 
         memcpy(&config, (const void*)input_buffer, sizeof(Config));
-        Serial.printf("Received new config data, version %d, max_brightness %d", config.version, config.max_brightness);
-        set_config(config);
+        if (config.should_store) {
+            set_config(config);
+        }
+
         applyConfig();
 }
 
