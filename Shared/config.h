@@ -57,7 +57,7 @@ Config setup_config();
 #define LED_PIN PIN_PA5
 // i2c stuff
 #define USE_I2C
-#define I2C_ADDRESS 14
+#define I2C_ADDRESS 21
 
 
 // Software Serial Stuff
